@@ -1,248 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Grow a Garden Stock (Live)</title>
-<style>
-  /* Modern clean style */
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #fafafa;
-    color: #222;
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  h1 {
-    margin-bottom: 20px;
-    font-weight: 700;
-    color: #2c7a7b;
-  }
-  #filters {
-    margin-bottom: 20px;
-  }
-  label {
-    margin-right: 16px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  input[type=checkbox] {
-    margin-right: 6px;
-    cursor: pointer;
-  }
-  #output {
-    width: 100%;
-    max-width: 700px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px rgb(0 0 0 / 0.1);
-    padding: 16px;
-    box-sizing: border-box;
-    min-height: 200px;
-  }
-  .category {
-    margin-bottom: 24px;
-  }
-  .category h3 {
-    border-bottom: 2px solid #2c7a7b;
-    padding-bottom: 6px;
-    margin-bottom: 12px;
-    color: #2c7a7b;
-  }
-  .item {
-    display: flex;
-    align-items: center;
-    padding: 10px 8px;
-    border-radius: 6px;
-    background: #f9f9f9;
-    margin-bottom: 8px;
-    box-shadow: 0 2px 5px rgb(0 0 0 / 0.04);
-    transition: background 0.3s;
-  }
-  .item.new {
-    background: #d1ffd1;
-  }
-  .item:hover {
-    background: #def0f0;
-  }
-  .item img {
-    width: 40px;
-    height: 40px;
-    margin-right: 16px;
-    image-rendering: pixelated;
-    border-radius: 6px;
-    flex-shrink: 0;
-  }
-  .item-details {
-    display: flex;
-    flex-direction: column;
-  }
-  .item-name {
-    font-weight: 700;
-    font-size: 1.1em;
-  }
-  .item-quantity {
-    font-size: 0.9em;
-    color: #555;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grow a Garden Stock (Tailwind Modern)</title>
 
-  /* Loading spinner */
-  .spinner {
-    border: 5px solid #eee;
-    border-top: 5px solid #2c7a7b;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    animation: spin 1s linear infinite;
-    margin: 40px auto;
-  }
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  /* Error message */
-  #error {
-    background: #ffdede;
-    color: #900;
-    padding: 12px;
-    margin-top: 20px;
-    border-radius: 8px;
-    max-width: 700px;
-    font-weight: 600;
-    text-align: center;
-    user-select: none;
-  }
-
-  /* Responsive */
-  @media (max-width: 480px) {
-    #output {
-      padding: 12px;
+  <style>
+    /* Fade-in animation for new items */
+    @keyframes fadeInHighlight {
+      0% {
+        background-color: #d1ffd1;
+        box-shadow: 0 0 12px 3px rgba(34,197,94,0.7);
+      }
+      100% {
+        background-color: transparent;
+        box-shadow: none;
+      }
     }
-    .item {
-      padding: 8px 6px;
+    .new-item {
+      animation: fadeInHighlight 2.5s ease forwards;
     }
-    .item img {
-      width: 32px;
-      height: 32px;
-      margin-right: 12px;
-    }
-  }
-</style>
+  </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-6 font-sans text-gray-900">
 
-<h1>🪴 Grow a Garden Stock (Live)</h1>
+  <!-- Custom SVG Grow a Garden Logo -->
+  <header class="flex items-center space-x-3 mb-8 select-none">
+    <svg class="w-12 h-12 text-green-600" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="3"/>
+      <path fill="currentColor" d="M20 44c0-6 12-14 12-14s12 8 12 14a12 12 0 1 1-24 0z"/>
+      <path stroke="white" stroke-width="2" d="M32 38v-8"/>
+      <path stroke="white" stroke-width="2" d="M28 34h8"/>
+    </svg>
+    <h1 class="text-3xl font-extrabold text-green-700">Grow a Garden Stock</h1>
+  </header>
 
-<div id="filters">
-  <label><input type="checkbox" id="seeds" checked> Seeds</label>
-  <label><input type="checkbox" id="gear" checked> Gear</label>
-  <label><input type="checkbox" id="eggs" checked> Eggs</label>
-  <label><input type="checkbox" id="cosmetics" checked> Cosmetics</label>
-  <label><input type="checkbox" id="eventshop" checked> Event Shop</label>
-</div>
+  <!-- Filters -->
+  <form id="filters" aria-label="Select categories" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-xl w-full mb-8 select-none">
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+      <input type="checkbox" id="seeds" checked class="w-5 h-5 cursor-pointer"/>
+      <span class="font-semibold text-green-700">Seeds</span>
+    </label>
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+      <input type="checkbox" id="gear" checked class="w-5 h-5 cursor-pointer"/>
+      <span class="font-semibold text-green-700">Gear</span>
+    </label>
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+      <input type="checkbox" id="eggs" checked class="w-5 h-5 cursor-pointer"/>
+      <span class="font-semibold text-green-700">Eggs</span>
+    </label>
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+      <input type="checkbox" id="cosmetics" checked class="w-5 h-5 cursor-pointer"/>
+      <span class="font-semibold text-green-700">Cosmetics</span>
+    </label>
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+      <input type="checkbox" id="eventshop" checked class="w-5 h-5 cursor-pointer"/>
+      <span class="font-semibold text-green-700">Event Shop</span>
+    </label>
+  </form>
 
-<div id="output" aria-live="polite" aria-busy="false">
-  <!-- Data will go here -->
-</div>
+  <!-- Output -->
+  <main id="output" role="region" aria-live="polite" aria-busy="false" tabindex="0" class="max-w-3xl w-full bg-white rounded-lg shadow-lg p-6 min-h-[240px] select-none">
+    <!-- Loading spinner or data go here -->
+  </main>
 
-<div id="error" role="alert" style="display:none;"></div>
+  <!-- Error -->
+  <div id="error" role="alert" aria-live="assertive" class="max-w-3xl w-full mt-6 bg-red-100 text-red-700 font-semibold p-4 rounded-lg shadow-md hidden select-none"></div>
 
-<script>
-  const output = document.getElementById('output');
-  const errorBox = document.getElementById('error');
+  <script>
+    (() => {
+      const output = document.getElementById('output');
+      const errorBox = document.getElementById('error');
+      const filtersForm = document.getElementById('filters');
 
-  const categories = {
-    seeds: {key: 'seed_stock', title: 'Seeds'},
-    gear: {key: 'gear_stock', title: 'Gear'},
-    eggs: {key: 'egg_stock', title: 'Eggs'},
-    cosmetics: {key: 'cosmetic_stock', title: 'Cosmetics'},
-    eventshop: {key: 'eventshop_stock', title: 'Event Shop'}
-  };
+      const categories = {
+        seeds: {key: 'seed_stock', title: 'Seeds'},
+        gear: {key: 'gear_stock', title: 'Gear'},
+        eggs: {key: 'egg_stock', title: 'Eggs'},
+        cosmetics: {key: 'cosmetic_stock', title: 'Cosmetics'},
+        eventshop: {key: 'eventshop_stock', title: 'Event Shop'}
+      };
 
-  let prevItems = {
-    seed_stock: new Set(),
-    gear_stock: new Set(),
-    egg_stock: new Set(),
-    cosmetic_stock: new Set(),
-    eventshop_stock: new Set()
-  };
+      let prevItems = {
+        seed_stock: new Set(),
+        gear_stock: new Set(),
+        egg_stock: new Set(),
+        cosmetic_stock: new Set(),
+        eventshop_stock: new Set()
+      };
 
-  function createLoadingSpinner() {
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner';
-    return spinner;
-  }
+      const createSpinner = () => {
+        return `
+          <div class="flex justify-center my-16" role="status" aria-live="polite" aria-busy="true">
+            <svg class="animate-spin h-12 w-12 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            <span class="sr-only">Loading...</span>
+          </div>`;
+      };
 
-  function renderData(data) {
-    output.innerHTML = '';
+      const renderData = (data) => {
+        output.innerHTML = '';
+        errorBox.classList.add('hidden');
 
-    for (const [checkboxId, {key, title}] of Object.entries(categories)) {
-      if (!document.getElementById(checkboxId).checked) continue;
+        for (const [filterId, {key, title}] of Object.entries(categories)) {
+          if (!document.getElementById(filterId).checked) continue;
 
-      const categoryDiv = document.createElement('div');
-      categoryDiv.className = 'category';
-      categoryDiv.innerHTML = `<h3>${title}</h3>`;
+          const section = document.createElement('section');
+          section.className = 'category mb-8';
+          section.setAttribute('aria-label', title);
+          section.innerHTML = `<h2 class="text-2xl font-bold text-green-700 mb-4">${title}</h2>`;
 
-      data[key].forEach(item => {
-        const isNew = !prevItems[key].has(item.item_id);
-        if (isNew) prevItems[key].add(item.item_id);
+          data[key].forEach(item => {
+            const isNew = !prevItems[key].has(item.item_id);
+            if (isNew) prevItems[key].add(item.item_id);
 
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'item' + (isNew ? ' new' : '');
-        itemDiv.innerHTML = `
-          <img src="${item.icon}" alt="${item.display_name} icon" />
-          <div class="item-details">
-            <div class="item-name">${item.display_name}</div>
-            <div class="item-quantity">Quantity: ${item.quantity}</div>
-          </div>
-        `;
+            const article = document.createElement('article');
+            article.className = `p-4 rounded-lg mb-3 border border-gray-200 cursor-default select-text ${
+              isNew ? 'new-item' : ''
+            }`;
+            article.setAttribute('tabindex', '0');
+            article.innerHTML = `
+              <div class="flex justify-between items-center">
+                <div class="font-semibold text-green-800 text-lg">${item.display_name}</div>
+                <div class="text-gray-600 font-mono">Qty: ${item.quantity}</div>
+              </div>
+            `;
 
-        categoryDiv.appendChild(itemDiv);
-      });
+            section.appendChild(article);
+          });
 
-      output.appendChild(categoryDiv);
-    }
-  }
+          output.appendChild(section);
+        }
 
-  async function fetchStock() {
-    output.setAttribute('aria-busy', 'true');
-    errorBox.style.display = 'none';
-    output.innerHTML = '';
-    output.appendChild(createLoadingSpinner());
+        output.focus();
+      };
 
-    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const apiUrl = encodeURIComponent('https://growagarden-stock-live.vercel.app/api/stock');
+      const fetchStock = async () => {
+        output.setAttribute('aria-busy', 'true');
+        output.innerHTML = createSpinner();
+        errorBox.classList.add('hidden');
 
-    try {
-      const response = await fetch(proxyUrl + apiUrl, {cache: "no-store"});
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const apiUrl = encodeURIComponent('https://growagarden-stock-live.vercel.app/api/stock');
 
-      const data = await response.json();
-      renderData(data);
-    } catch (e) {
-      output.innerHTML = '';
-      errorBox.style.display = 'block';
-      errorBox.textContent = 'Error Code 1: No internet connection or traffic limit reached. Please try again later.';
-      console.error('Fetch error:', e);
-    } finally {
-      output.setAttribute('aria-busy', 'false');
-    }
-  }
+        try {
+          const response = await fetch(proxyUrl + apiUrl, { cache: 'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-  // Attach checkbox listeners to reload on change
-  Object.keys(categories).forEach(id => {
-    document.getElementById(id).addEventListener('change', fetchStock);
-  });
+          const data = await response.json();
+          renderData(data);
+        } catch (e) {
+          output.innerHTML = '';
+          errorBox.classList.remove('hidden');
+          errorBox.textContent = 'Error Code 1: No internet connection or traffic limit reached. Please try again later.';
+          console.error('Fetch error:', e);
+        } finally {
+          output.setAttribute('aria-busy', 'false');
+        }
+      };
 
-  // Initial load + repeat every 10 seconds
-  fetchStock();
-  setInterval(fetchStock, 10000);
-</script>
+      let debounceTimer = null;
+      const debounceFetch = () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchStock, 350);
+      };
+
+      filtersForm.addEventListener('change', debounceFetch);
+
+      // Initial fetch + auto-refresh every 10 seconds
+      fetchStock();
+      setInterval(fetchStock, 10_000);
+    })();
+  </script>
 
 </body>
 </html>
