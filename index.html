@@ -1,60 +1,248 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Grow a Garden Stock</title>
-  <style>
-    body { font-family: sans-serif; padding:20px; }
-    .category { margin:20px 0; }
-    .item { padding:4px; }
-    .new { background: #d1ffd1; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Grow a Garden Stock (Live)</title>
+<style>
+  /* Modern clean style */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fafafa;
+    color: #222;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: #2c7a7b;
+  }
+  #filters {
+    margin-bottom: 20px;
+  }
+  label {
+    margin-right: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  input[type=checkbox] {
+    margin-right: 6px;
+    cursor: pointer;
+  }
+  #output {
+    width: 100%;
+    max-width: 700px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgb(0 0 0 / 0.1);
+    padding: 16px;
+    box-sizing: border-box;
+    min-height: 200px;
+  }
+  .category {
+    margin-bottom: 24px;
+  }
+  .category h3 {
+    border-bottom: 2px solid #2c7a7b;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    color: #2c7a7b;
+  }
+  .item {
+    display: flex;
+    align-items: center;
+    padding: 10px 8px;
+    border-radius: 6px;
+    background: #f9f9f9;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.04);
+    transition: background 0.3s;
+  }
+  .item.new {
+    background: #d1ffd1;
+  }
+  .item:hover {
+    background: #def0f0;
+  }
+  .item img {
+    width: 40px;
+    height: 40px;
+    margin-right: 16px;
+    image-rendering: pixelated;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .item-details {
+    display: flex;
+    flex-direction: column;
+  }
+  .item-name {
+    font-weight: 700;
+    font-size: 1.1em;
+  }
+  .item-quantity {
+    font-size: 0.9em;
+    color: #555;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    border: 5px solid #eee;
+    border-top: 5px solid #2c7a7b;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Error message */
+  #error {
+    background: #ffdede;
+    color: #900;
+    padding: 12px;
+    margin-top: 20px;
+    border-radius: 8px;
+    max-width: 700px;
+    font-weight: 600;
+    text-align: center;
+    user-select: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    #output {
+      padding: 12px;
+    }
+    .item {
+      padding: 8px 6px;
+    }
+    .item img {
+      width: 32px;
+      height: 32px;
+      margin-right: 12px;
+    }
+  }
+</style>
 </head>
 <body>
-  <h1>🪴 Grow a Garden Stock</h1>
-  <div><label><input type="checkbox" id="seeds" checked> Seeds</label>
-        <label><input type="checkbox" id="gear" checked> Gear</label>
-        <label><input type="checkbox" id="eggs" checked> Eggs</label></div>
-  <div id="output"></div>
 
-  <script>
-    let prev = { seeds: [], gear: [], eggs: [] };
+<h1>🪴 Grow a Garden Stock (Live)</h1>
 
-    async function fetchStock() {
-      const res = await fetch('https://growagarden-stock-live.vercel.app/api/stock');
-      const data = await res.json();
+<div id="filters">
+  <label><input type="checkbox" id="seeds" checked> Seeds</label>
+  <label><input type="checkbox" id="gear" checked> Gear</label>
+  <label><input type="checkbox" id="eggs" checked> Eggs</label>
+  <label><input type="checkbox" id="cosmetics" checked> Cosmetics</label>
+  <label><input type="checkbox" id="eventshop" checked> Event Shop</label>
+</div>
 
-      const out = document.getElementById('output');
-      out.innerHTML = '';
+<div id="output" aria-live="polite" aria-busy="false">
+  <!-- Data will go here -->
+</div>
 
-      ['seeds','gear','eggs'].forEach(type => {
-        if (!document.getElementById(type).checked) return;
-        const div = document.createElement('div');
-        div.className = 'category';
-        div.innerHTML = `<h3>${type.charAt(0).toUpperCase()+type.slice(1)}</h3>`;
-        data[type].forEach(item => {
-          const isNew = !prev[type].includes(item);
-          const el = document.createElement('div');
-          el.textContent = item;
-          if (isNew) { el.classList.add('new'); notify(item); }
-          div.appendChild(el);
-        });
-        prev[type] = data[type];
-        out.appendChild(div);
+<div id="error" role="alert" style="display:none;"></div>
+
+<script>
+  const output = document.getElementById('output');
+  const errorBox = document.getElementById('error');
+
+  const categories = {
+    seeds: {key: 'seed_stock', title: 'Seeds'},
+    gear: {key: 'gear_stock', title: 'Gear'},
+    eggs: {key: 'egg_stock', title: 'Eggs'},
+    cosmetics: {key: 'cosmetic_stock', title: 'Cosmetics'},
+    eventshop: {key: 'eventshop_stock', title: 'Event Shop'}
+  };
+
+  let prevItems = {
+    seed_stock: new Set(),
+    gear_stock: new Set(),
+    egg_stock: new Set(),
+    cosmetic_stock: new Set(),
+    eventshop_stock: new Set()
+  };
+
+  function createLoadingSpinner() {
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    return spinner;
+  }
+
+  function renderData(data) {
+    output.innerHTML = '';
+
+    for (const [checkboxId, {key, title}] of Object.entries(categories)) {
+      if (!document.getElementById(checkboxId).checked) continue;
+
+      const categoryDiv = document.createElement('div');
+      categoryDiv.className = 'category';
+      categoryDiv.innerHTML = `<h3>${title}</h3>`;
+
+      data[key].forEach(item => {
+        const isNew = !prevItems[key].has(item.item_id);
+        if (isNew) prevItems[key].add(item.item_id);
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'item' + (isNew ? ' new' : '');
+        itemDiv.innerHTML = `
+          <img src="${item.icon}" alt="${item.display_name} icon" />
+          <div class="item-details">
+            <div class="item-name">${item.display_name}</div>
+            <div class="item-quantity">Quantity: ${item.quantity}</div>
+          </div>
+        `;
+
+        categoryDiv.appendChild(itemDiv);
       });
-    }
 
-    function notify(item) {
-      if (Notification.permission==='granted') {
-        new Notification('New stock!', { body: item });
-      }
+      output.appendChild(categoryDiv);
     }
+  }
 
-    if (Notification.permission !== 'granted') {
-      Notification.requestPermission();
+  async function fetchStock() {
+    output.setAttribute('aria-busy', 'true');
+    errorBox.style.display = 'none';
+    output.innerHTML = '';
+    output.appendChild(createLoadingSpinner());
+
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const apiUrl = encodeURIComponent('https://growagarden-stock-live.vercel.app/api/stock');
+
+    try {
+      const response = await fetch(proxyUrl + apiUrl, {cache: "no-store"});
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const data = await response.json();
+      renderData(data);
+    } catch (e) {
+      output.innerHTML = '';
+      errorBox.style.display = 'block';
+      errorBox.textContent = 'Error Code 1: No internet connection or traffic limit reached. Please try again later.';
+      console.error('Fetch error:', e);
+    } finally {
+      output.setAttribute('aria-busy', 'false');
     }
+  }
 
-    fetchStock();
-    setInterval(fetchStock, 10000);
-  </script>
+  // Attach checkbox listeners to reload on change
+  Object.keys(categories).forEach(id => {
+    document.getElementById(id).addEventListener('change', fetchStock);
+  });
+
+  // Initial load + repeat every 10 seconds
+  fetchStock();
+  setInterval(fetchStock, 10000);
+</script>
+
 </body>
 </html>
