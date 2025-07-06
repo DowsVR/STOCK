@@ -3,85 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Grow a Garden Stock (Tailwind Modern)</title>
-
-  <!-- Tailwind CDN -->
+  <title>Grow a Garden Stock + Calculate + Info</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    /* Fade-in animation for new items */
     @keyframes fadeInHighlight {
       0% {
-        background-color: #d1ffd1;
-        box-shadow: 0 0 12px 3px rgba(34,197,94,0.7);
+        background: linear-gradient(90deg, #a7f3d0, #6ee7b7);
+        box-shadow: 0 0 12px 4px rgba(34,197,94,0.8);
       }
       100% {
-        background-color: transparent;
+        background: transparent;
         box-shadow: none;
       }
     }
     .new-item {
-      animation: fadeInHighlight 2.5s ease forwards;
+      animation: fadeInHighlight 3s ease forwards;
+    }
+    .category-seeds {
+      background: linear-gradient(to right, #d1fae5, #6ee7b7);
+    }
+    .category-gear {
+      background: linear-gradient(to right, #dbeafe, #3b82f6);
+    }
+    .category-eggs {
+      background: linear-gradient(to right, #fef3c7, #fbbf24);
+    }
+    .category-cosmetics {
+      background: linear-gradient(to right, #ede9fe, #8b5cf6);
+    }
+    .category-eventshop {
+      background: linear-gradient(to right, #fed7aa, #fb923c);
+    }
+    .category-weather {
+      background: linear-gradient(to right, #bae6fd, #38bdf8);
+    }
+    /* Modal backdrop */
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.4);
     }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col items-center p-6 font-sans text-gray-900">
 
-  <!-- Custom SVG Grow a Garden Logo -->
-  <header class="flex items-center space-x-3 mb-8 select-none">
-    <svg class="w-12 h-12 text-green-600" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-      <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="3"/>
-      <path fill="currentColor" d="M20 44c0-6 12-14 12-14s12 8 12 14a12 12 0 1 1-24 0z"/>
-      <path stroke="white" stroke-width="2" d="M32 38v-8"/>
-      <path stroke="white" stroke-width="2" d="M28 34h8"/>
-    </svg>
-    <h1 class="text-3xl font-extrabold text-green-700">Grow a Garden Stock</h1>
+  <header class="mb-6 select-none max-w-3xl w-full text-center">
+    <h1 class="text-4xl font-extrabold text-green-700 mb-2">Grow a Garden Stock + Calculate + Info</h1>
+    <p class="text-gray-600">View live stock, weather, calculate fruit values, and see item details.</p>
   </header>
 
-  <!-- Filters -->
-  <form id="filters" aria-label="Select categories" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-xl w-full mb-8 select-none">
+  <form id="filters" aria-label="Select categories" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 max-w-3xl w-full mb-8 select-none">
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-blue-50 transition">
+      <input type="checkbox" id="weather" checked class="w-5 h-5 cursor-pointer"/>
+      <span class="font-semibold text-blue-700">Weather</span>
+    </label>
     <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
       <input type="checkbox" id="seeds" checked class="w-5 h-5 cursor-pointer"/>
       <span class="font-semibold text-green-700">Seeds</span>
     </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-blue-50 transition">
       <input type="checkbox" id="gear" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-green-700">Gear</span>
+      <span class="font-semibold text-blue-700">Gear</span>
     </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-yellow-50 transition">
       <input type="checkbox" id="eggs" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-green-700">Eggs</span>
+      <span class="font-semibold text-yellow-700">Eggs</span>
     </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-purple-50 transition">
       <input type="checkbox" id="cosmetics" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-green-700">Cosmetics</span>
+      <span class="font-semibold text-purple-700">Cosmetics</span>
     </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
+    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-orange-50 transition">
       <input type="checkbox" id="eventshop" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-green-700">Event Shop</span>
+      <span class="font-semibold text-orange-700">Event Shop</span>
     </label>
   </form>
 
-  <!-- Output -->
-  <main id="output" role="region" aria-live="polite" aria-busy="false" tabindex="0" class="max-w-3xl w-full bg-white rounded-lg shadow-lg p-6 min-h-[240px] select-none">
-    <!-- Loading spinner or data go here -->
-  </main>
+  <main id="output" role="region" aria-live="polite" aria-busy="false" tabindex="0" class="max-w-3xl w-full bg-white rounded-lg shadow-lg p-6 min-h-[240px] select-none"></main>
 
-  <!-- Error -->
   <div id="error" role="alert" aria-live="assertive" class="max-w-3xl w-full mt-6 bg-red-100 text-red-700 font-semibold p-4 rounded-lg shadow-md hidden select-none"></div>
+
+  <section id="calculate-section" class="max-w-3xl w-full bg-white rounded-lg shadow-lg p-6 mt-10 mb-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 select-none">Calculate Fruit Value</h2>
+    <form id="calculate-form" class="flex flex-col sm:flex-row gap-4">
+      <select id="item-select" class="border border-gray-300 rounded-md px-3 py-2 flex-grow" aria-label="Select item for calculation">
+        <option value="" disabled selected>Select an item...</option>
+      </select>
+      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold transition">Calculate</button>
+    </form>
+    <div id="calculation-result" class="mt-4 text-gray-700 font-mono"></div>
+  </section>
+
+  <!-- Modal for item info -->
+  <div id="info-modal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="modal-backdrop absolute inset-0"></div>
+    <div class="bg-white rounded-lg shadow-xl max-w-md mx-4 p-6 relative z-10">
+      <button id="close-modal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-900" aria-label="Close info modal" title="Close">&times;</button>
+      <div id="info-content" tabindex="0" class="outline-none"></div>
+    </div>
+  </div>
 
   <script>
     (() => {
       const output = document.getElementById('output');
       const errorBox = document.getElementById('error');
       const filtersForm = document.getElementById('filters');
+      const itemSelect = document.getElementById('item-select');
+      const calcForm = document.getElementById('calculate-form');
+      const calcResult = document.getElementById('calculation-result');
+      const modal = document.getElementById('info-modal');
+      const modalContent = document.getElementById('info-content');
+      const closeModalBtn = document.getElementById('close-modal');
 
       const categories = {
-        seeds: {key: 'seed_stock', title: 'Seeds'},
-        gear: {key: 'gear_stock', title: 'Gear'},
-        eggs: {key: 'egg_stock', title: 'Eggs'},
-        cosmetics: {key: 'cosmetic_stock', title: 'Cosmetics'},
-        eventshop: {key: 'eventshop_stock', title: 'Event Shop'}
+        seeds: { key: 'seed_stock', title: 'Seeds', cssClass: 'category-seeds' },
+        gear: { key: 'gear_stock', title: 'Gear', cssClass: 'category-gear' },
+        eggs: { key: 'egg_stock', title: 'Eggs', cssClass: 'category-eggs' },
+        cosmetics: { key: 'cosmetic_stock', title: 'Cosmetics', cssClass: 'category-cosmetics' },
+        eventshop: { key: 'eventshop_stock', title: 'Event Shop', cssClass: 'category-eventshop' },
       };
 
       let prevItems = {
@@ -89,94 +127,248 @@
         gear_stock: new Set(),
         egg_stock: new Set(),
         cosmetic_stock: new Set(),
-        eventshop_stock: new Set()
+        eventshop_stock: new Set(),
       };
 
-      const createSpinner = () => {
-        return `
-          <div class="flex justify-center my-16" role="status" aria-live="polite" aria-busy="true">
-            <svg class="animate-spin h-12 w-12 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-            </svg>
-            <span class="sr-only">Loading...</span>
-          </div>`;
+      let allItemsMap = new Map(); // key=item_id, value=item data (from stock or info)
+
+      const createSpinner = () => `
+        <div class="flex justify-center my-16" role="status" aria-live="polite" aria-busy="true">
+          <svg class="animate-spin h-12 w-12 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          <span class="sr-only">Loading...</span>
+        </div>
+      `;
+
+      // Render weather section
+      const renderWeather = (weatherData) => {
+        if (!weatherData) return null;
+
+        const condition = weatherData.weather_name || 'Unknown';
+        const durationSec = weatherData.duration ?? 0;
+        const startDate = new Date(weatherData.start_date_unix * 1000).toLocaleTimeString();
+        const endDate = new Date(weatherData.end_date_unix * 1000).toLocaleTimeString();
+        const iconUrl = weatherData.icon || '';
+
+        const section = document.createElement('section');
+        section.className = 'category mb-8 rounded-lg p-4 category-weather bg-opacity-20';
+        section.setAttribute('aria-label', 'Weather');
+
+        section.innerHTML = `
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Weather</h2>
+          <div class="flex items-center space-x-6">
+            <img src="${iconUrl}" alt="${condition} icon" class="w-16 h-16" loading="lazy" />
+            <div class="text-lg font-semibold text-blue-800">${condition}</div>
+            <div class="text-gray-700 font-mono">Duration: ${Math.floor(durationSec/60)} mins</div>
+            <div class="text-gray-700 font-mono">Start: ${startDate}</div>
+            <div class="text-gray-700 font-mono">End: ${endDate}</div>
+          </div>
+        `;
+
+        return section;
       };
 
-      const renderData = (data) => {
-        output.innerHTML = '';
-        errorBox.classList.add('hidden');
+      // Render stock category
+      const renderStockCategory = (items, title, cssClass, key) => {
+        const section = document.createElement('section');
+        section.className = `category mb-8 rounded-lg p-4 ${cssClass} bg-opacity-20`;
+        section.setAttribute('aria-label', title);
 
-        for (const [filterId, {key, title}] of Object.entries(categories)) {
-          if (!document.getElementById(filterId).checked) continue;
+        section.innerHTML = `<h2 class="text-2xl font-bold text-gray-800 mb-4">${title}</h2>`;
 
-          const section = document.createElement('section');
-          section.className = 'category mb-8';
-          section.setAttribute('aria-label', title);
-          section.innerHTML = `<h2 class="text-2xl font-bold text-green-700 mb-4">${title}</h2>`;
+        items.forEach(item => {
+          const isNew = !prevItems[key].has(item.item_id);
+          if (isNew) prevItems[key].add(item.item_id);
 
-          data[key].forEach(item => {
-            const isNew = !prevItems[key].has(item.item_id);
-            if (isNew) prevItems[key].add(item.item_id);
+          // Store for selection and info
+          allItemsMap.set(item.item_id, item);
 
-            const article = document.createElement('article');
-            article.className = `p-4 rounded-lg mb-3 border border-gray-200 cursor-default select-text ${
-              isNew ? 'new-item' : ''
-            }`;
-            article.setAttribute('tabindex', '0');
-            article.innerHTML = `
-              <div class="flex justify-between items-center">
-                <div class="font-semibold text-green-800 text-lg">${item.display_name}</div>
-                <div class="text-gray-600 font-mono">Qty: ${item.quantity}</div>
-              </div>
-            `;
+          const article = document.createElement('article');
+          article.className = `p-3 mb-3 rounded-lg border border-gray-200 bg-white flex items-center space-x-4 cursor-pointer select-text ${
+            isNew ? 'new-item' : ''
+          }`;
+          article.setAttribute('tabindex', '0');
+          article.setAttribute('role', 'button');
+          article.setAttribute('aria-pressed', 'false');
 
-            section.appendChild(article);
+          article.innerHTML = `
+            <img src="${item.icon}" alt="${item.display_name} icon" class="w-12 h-12 rounded-md object-contain flex-shrink-0" loading="lazy" />
+            <div class="flex-1">
+              <div class="font-semibold text-green-900 text-lg">${item.display_name}</div>
+            </div>
+            <div class="text-gray-600 font-mono">Qty: ${item.quantity}</div>
+          `;
+
+          // Clicking shows item info modal
+          article.addEventListener('click', () => showItemInfo(item.item_id));
+          article.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              showItemInfo(item.item_id);
+            }
           });
 
-          output.appendChild(section);
-        }
+          section.appendChild(article);
+        });
 
-        output.focus();
+        return section;
       };
 
-      const fetchStock = async () => {
+      // Show item info modal with fetch from /info/{item_id}
+      async function showItemInfo(itemId) {
+        modalContent.innerHTML = createSpinner();
+        modal.classList.remove('hidden');
+        modal.focus();
+
+        try {
+          const res = await fetch(`https://api.joshlei.com/v2/growagarden/info/${itemId}`, {cache: 'no-store'});
+          if (!res.ok) throw new Error(`API HTTP ${res.status}`);
+          const data = await res.json();
+
+          // Build info content from data object (show all keys nicely)
+          let html = `<h3 class="text-xl font-bold mb-3">${data.display_name || itemId}</h3>`;
+          if (data.icon) {
+            html += `<img src="${data.icon}" alt="${data.display_name} icon" class="w-20 h-20 mb-4 object-contain"/>`;
+          }
+          html += `<dl class="space-y-2 text-gray-700">`;
+
+          for (const [key, val] of Object.entries(data)) {
+            if (['item_id', 'display_name', 'icon'].includes(key)) continue;
+            let valueString = '';
+            if (Array.isArray(val)) {
+              valueString = val.join(', ');
+            } else if (typeof val === 'object' && val !== null) {
+              valueString = JSON.stringify(val, null, 2);
+            } else {
+              valueString = val;
+            }
+            html += `<div><dt class="font-semibold">${key.replace(/_/g, ' ')}</dt><dd class="whitespace-pre-wrap">${valueString}</dd></div>`;
+          }
+          html += '</dl>';
+
+          modalContent.innerHTML = html;
+
+        } catch (err) {
+          modalContent.innerHTML = `<p class="text-red-600 font-semibold">Failed to load info for item: ${itemId}</p>`;
+          console.error('Info fetch error:', err);
+        }
+      }
+
+      // Close modal handlers
+      closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+      modal.addEventListener('click', e => {
+        if (e.target === modal) modal.classList.add('hidden');
+      });
+      window.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+          modal.classList.add('hidden');
+        }
+      });
+
+      // Populate select options for calculation from allItemsMap keys
+      function populateCalculateSelect() {
+        // Clear old options except placeholder
+        const placeholder = itemSelect.querySelector('option[disabled]');
+        itemSelect.innerHTML = '';
+        itemSelect.appendChild(placeholder);
+
+        for (const [itemId, item] of allItemsMap.entries()) {
+          const opt = document.createElement('option');
+          opt.value = itemId;
+          opt.textContent = item.display_name || itemId;
+          itemSelect.appendChild(opt);
+        }
+      }
+
+      // Handle calculation form submission
+      calcForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const itemId = itemSelect.value;
+        if (!itemId) {
+          calcResult.textContent = 'Please select an item first.';
+          return;
+        }
+        calcResult.textContent = 'Calculating...';
+
+        try {
+          const res = await fetch(`https://api.joshlei.com/v2/growagarden/calculate?item_id=${encodeURIComponent(itemId)}`, {cache: 'no-store'});
+          if (!res.ok) throw new Error(`Calculation API HTTP ${res.status}`);
+          const data = await res.json();
+
+          // Show result nicely, handle if array or object
+          let resultText = JSON.stringify(data, null, 2);
+          if(typeof data === 'object' && data !== null){
+            resultText = '';
+            for(const [k,v] of Object.entries(data)){
+              resultText += `${k.replace(/_/g, ' ')}: ${typeof v === 'object' ? JSON.stringify(v) : v}\n`;
+            }
+          }
+
+          calcResult.textContent = resultText;
+
+        } catch (err) {
+          calcResult.textContent = 'Failed to calculate fruit value. Please try again later.';
+          console.error('Calculation fetch error:', err);
+        }
+      });
+
+      // Fetch stock and weather
+      const fetchStockAndWeather = async () => {
         output.setAttribute('aria-busy', 'true');
         output.innerHTML = createSpinner();
         errorBox.classList.add('hidden');
 
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const apiUrl = encodeURIComponent('https://growagarden-stock-live.vercel.app/api/stock');
-
         try {
-          const response = await fetch(proxyUrl + apiUrl, { cache: 'no-store' });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const [stockRes, weatherRes] = await Promise.all([
+            fetch('https://api.joshlei.com/v2/growagarden/stock', {cache: 'no-store'}),
+            fetch('https://api.joshlei.com/v2/growagarden/weather', {cache: 'no-store'}),
+          ]);
 
-          const data = await response.json();
-          renderData(data);
-        } catch (e) {
+          if (!stockRes.ok) throw new Error(`Stock API HTTP ${stockRes.status}`);
+          if (!weatherRes.ok) throw new Error(`Weather API HTTP ${weatherRes.status}`);
+
+          const stockData = await stockRes.json();
+          const weatherData = await weatherRes.json();
+
+          output.innerHTML = '';
+          allItemsMap.clear();
+          // Weather first if checked
+          if(document.getElementById('weather').checked){
+            const weatherSection = renderWeather(weatherData);
+            if(weatherSection) output.appendChild(weatherSection);
+          }
+
+          // Render each stock category if checked
+          for(const [filterId, {key, title, cssClass}] of Object.entries(categories)){
+            if(!document.getElementById(filterId).checked) continue;
+            const items = stockData[key] ?? [];
+            const section = renderStockCategory(items, title, cssClass, key);
+            output.appendChild(section);
+          }
+
+          populateCalculateSelect();
+          output.focus();
+
+        } catch (err) {
           output.innerHTML = '';
           errorBox.classList.remove('hidden');
-          errorBox.textContent = 'Error Code 1: No internet connection or traffic limit reached. Please try again later.';
-          console.error('Fetch error:', e);
+          errorBox.textContent = 'Error Code 1: No internet or API limit reached. Please try again later.';
+          console.error('Fetch error:', err);
         } finally {
           output.setAttribute('aria-busy', 'false');
         }
       };
 
-      let debounceTimer = null;
-      const debounceFetch = () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(fetchStock, 350);
-      };
+      filtersForm.addEventListener('change', () => {
+        Object.values(prevItems).forEach(set => set.clear());
+        fetchStockAndWeather();
+      });
 
-      filtersForm.addEventListener('change', debounceFetch);
-
-      // Initial fetch + auto-refresh every 10 seconds
-      fetchStock();
-      setInterval(fetchStock, 10_000);
+      fetchStockAndWeather();
+      setInterval(fetchStockAndWeather, 10000);
     })();
   </script>
-
 </body>
 </html>
