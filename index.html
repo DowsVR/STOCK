@@ -3,67 +3,49 @@
 <head>
   <title>Grow a Garden Stock</title>
   <style>
-    body { font: sans-serif; padding: 20px; }
-    .stock-type { margin-bottom: 20px; }
-    .item.out { color: red; }
+    body { font-family: sans-serif; padding:20px; }
+    .category { margin:20px 0; }
+    .item { padding:4px; }
+    .new { background: #d1ffd1; }
   </style>
 </head>
 <body>
-  <h1>🛒 Grow a Garden Shop Stock</h1>
-  <div>
-    <label><input type="checkbox" id="sel-seeds" checked> Seeds</label>
-    <label><input type="checkbox" id="sel-gear" checked> Gear</label>
-    <label><input type="checkbox" id="sel-eggs" checked> Eggs</label>
-  </div>
-  <div id="display"></div>
+  <h1>🪴 Grow a Garden Stock</h1>
+  <div><label><input type="checkbox" id="seeds" checked> Seeds</label>
+        <label><input type="checkbox" id="gear" checked> Gear</label>
+        <label><input type="checkbox" id="eggs" checked> Eggs</label></div>
+  <div id="output"></div>
 
   <script>
-    let previous = {};
+    let prev = { seeds: [], gear: [], eggs: [] };
 
-    async function load() {
-      const resp = await fetch("https://your-host.com/stock.json");
-      const data = await resp.json();
-      const disp = document.getElementById("display");
-      disp.innerHTML = '';
+    async function fetchStock() {
+      const res = await fetch('https://growagarden-stock-live.vercel.app/api/stock');
+      const data = await res.json();
+
+      const out = document.getElementById('output');
+      out.innerHTML = '';
 
       ['seeds','gear','eggs'].forEach(type => {
-        if (!document.getElementById('sel-'+type).checked) return;
-
+        if (!document.getElementById(type).checked) return;
         const div = document.createElement('div');
-        div.className = 'stock-type';
-        div.innerHTML = `<h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3>`;
-
+        div.className = 'category';
+        div.innerHTML = `<h3>${type.charAt(0).toUpperCase()+type.slice(1)}</h3>`;
         data[type].forEach(item => {
+          const isNew = !prev[type].includes(item);
           const el = document.createElement('div');
           el.textContent = item;
-          if (!previous[type] || !previous[type].includes(item)) {
-            el.style.background = '#d1ffd1';
-            notify(`${type} in stock: ${item}`);
-          }
+          if (isNew) { el.classList.add('new'); notify(item); }
           div.appendChild(el);
         });
-
-        if (previous[type]) {
-          previous[type].forEach(item => {
-            if (!data[type].includes(item)) {
-              const el = document.createElement('div');
-              el.textContent = item + ' — out';
-              el.className = 'item out';
-              notify(`${type} out of stock: ${item}`);
-              div.appendChild(el);
-            }
-          });
-        }
-
-        disp.appendChild(div);
+        prev[type] = data[type];
+        out.appendChild(div);
       });
-
-      previous = data;
     }
 
-    function notify(msg) {
-      if (Notification.permission === 'granted') {
-        new Notification(msg);
+    function notify(item) {
+      if (Notification.permission==='granted') {
+        new Notification('New stock!', { body: item });
       }
     }
 
@@ -71,8 +53,8 @@
       Notification.requestPermission();
     }
 
-    load();
-    setInterval(load, 10000);
+    fetchStock();
+    setInterval(fetchStock, 10000);
   </script>
 </body>
 </html>
