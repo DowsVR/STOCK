@@ -3,464 +3,540 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Grow a Garden Stock Viewer</title>
+<title>Grow a Garden Stock</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml" />
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* Skeuomorphic styling */
+  /* Skeuomorphism + smooth styles */
+
   body {
-    font-family: 'Inter', sans-serif;
-    transition: background-color 0.4s, color 0.4s;
-    background: linear-gradient(135deg, #e2e8f0, #f8fafc);
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(145deg, #e0e0e0, #ffffff);
+    transition: background 0.4s ease;
   }
   body.dark {
-    background: linear-gradient(135deg, #1f2937, #111827);
-    color: #d1d5db;
+    background: linear-gradient(145deg, #1f2937, #111827);
   }
-  .skeuocard {
-    background: #f9fafb;
-    border-radius: 1rem;
-    box-shadow:
-      inset 6px 6px 10px #d1d5db,
-      inset -6px -6px 10px #ffffff;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    transition: background-color 0.4s, box-shadow 0.4s;
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
   }
-  body.dark .skeuocard {
-    background: #111827;
-    box-shadow:
-      inset 6px 6px 10px #0f172a,
-      inset -6px -6px 10px #1e293b;
-  }
-  .category h2 {
-    font-weight: 700;
-    font-size: 1.5rem;
+
+  h1 {
+    font-weight: 900;
+    font-size: 2.5rem;
+    text-align: center;
     margin-bottom: 1rem;
-    color: #334155;
+    color: #2c3e50;
+    text-shadow:
+      1px 1px 2px #fff,
+      -1px -1px 2px #bbb;
   }
-  body.dark .category h2 {
-    color: #e0e7ff;
+
+  body.dark h1 {
+    color: #f3f4f6;
+    text-shadow:
+      1px 1px 2px #000,
+      -1px -1px 2px #333;
   }
-  .item-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.8rem;
-    cursor: pointer;
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
+
+  /* Card base for skeuomorph effect */
+  .card {
+    background: #e0e0e0;
     box-shadow:
-      5px 5px 10px #d1d5db,
+      5px 5px 10px #bebebe,
       -5px -5px 10px #ffffff;
-    background: #f1f5f9;
-    transition: background-color 0.3s, box-shadow 0.3s;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
   }
-  .item-card:hover {
-    box-shadow:
-      inset 4px 4px 6px #cbd5e1,
-      inset -4px -4px 6px #ffffff;
-    background: #e2e8f0;
-  }
-  body.dark .item-card {
+  body.dark .card {
     background: #1e293b;
     box-shadow:
-      5px 5px 10px #0f172a,
-      -5px -5px 10px #1e293b;
+      inset 5px 5px 10px #111827,
+      inset -5px -5px 10px #2c3e50;
   }
-  body.dark .item-card:hover {
-    box-shadow:
-      inset 4px 4px 6px #0c1230,
-      inset -4px -4px 6px #1e293b;
-    background: #111827;
+
+  /* Category header */
+  .category-header {
+    font-weight: 800;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: #34495e;
   }
-  .item-name {
-    flex-grow: 1;
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: #334155;
-    user-select: none;
-  }
-  body.dark .item-name {
-    color: #d1d5db;
-  }
-  .quantity {
-    font-family: 'JetBrains Mono', monospace;
-    color: #64748b;
-    user-select: none;
-  }
-  body.dark .quantity {
-    color: #94a3b8;
-  }
-  .dropdown-btn {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-weight: 600;
-    color: #3b82f6;
-    user-select: none;
-    padding: 0;
-    margin-left: 0.5rem;
-    transition: color 0.3s;
-  }
-  .dropdown-btn:hover {
-    color: #2563eb;
-  }
-  body.dark .dropdown-btn {
-    color: #60a5fa;
-  }
-  body.dark .dropdown-btn:hover {
-    color: #3b82f6;
-  }
-  .dropdown-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease;
-    background: #f9fafb;
-    padding: 0 1rem;
-    border-radius: 0 0 1rem 1rem;
-    box-shadow:
-      inset 2px 2px 5px #d1d5db,
-      inset -2px -2px 5px #ffffff;
-    font-size: 0.95rem;
-    color: #334155;
-  }
-  .dropdown-content.show {
-    max-height: 15rem;
-    padding: 0.5rem 1rem;
-  }
-  body.dark .dropdown-content {
-    background: #111827;
-    box-shadow:
-      inset 2px 2px 5px #0f172a,
-      inset -2px -2px 5px #1e293b;
+  body.dark .category-header {
     color: #cbd5e1;
   }
-  .loading, .error-msg {
-    text-align: center;
-    font-size: 1.25rem;
-    padding: 3rem 1rem;
-    color: #6b7280;
-  }
-  body.dark .loading, body.dark .error-msg {
-    color: #94a3b8;
-  }
-  .header {
+
+  /* Item card */
+  .item-card {
+    position: relative;
+    background: #f0f0f0;
+    box-shadow:
+      3px 3px 6px #ccc,
+      -3px -3px 6px #fff;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.5rem;
-    background: #f3f4f6;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
-    border-radius: 1rem;
-    margin-bottom: 2rem;
+    transition:
+      box-shadow 0.3s ease,
+      background 0.3s ease;
   }
-  body.dark .header {
-    background: #1f2937;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.7);
+  .item-card:hover {
+    box-shadow:
+      6px 6px 12px #bbb,
+      -6px -6px 12px #fff;
   }
-  .btn {
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s, color 0.3s;
-    border: none;
+  body.dark .item-card {
+    background: #2a3748;
+    box-shadow:
+      3px 3px 6px #1c2535,
+      -3px -3px 6px #3a4a6a;
   }
-  .btn-primary {
-    background: #3b82f6;
+  body.dark .item-card:hover {
+    box-shadow:
+      6px 6px 12px #1c2535,
+      -6px -6px 12px #3a4a6a;
+  }
+
+  /* Item text */
+  .item-text {
+    font-weight: 700;
+    color: #2c3e50;
+  }
+  body.dark .item-text {
+    color: #e0e7ff;
+  }
+
+  /* Quantity badge */
+  .quantity-badge {
+    background: #8bc34a;
     color: white;
-    box-shadow: 0 4px 8px rgb(59 130 246 / 0.4);
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    box-shadow:
+      1px 1px 3px #6b8e23;
+    user-select: none;
+    min-width: 2.2rem;
+    text-align: center;
   }
-  .btn-primary:hover {
-    background: #2563eb;
+  body.dark .quantity-badge {
+    background: #7bbf3f;
+    box-shadow:
+      1px 1px 3px #4c6b13;
   }
-  .btn-secondary {
-    background: #e0e7ff;
-    color: #1e40af;
+
+  /* Dropdown popup */
+  .dropdown-content {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) scale(0.95);
+    top: 110%;
+    width: 300px;
+    background: #f9fafb;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-radius: 1rem;
+    padding: 1rem;
+    color: #334155;
+    font-size: 0.9rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      visibility 0.25s;
+    z-index: 50;
+    user-select: text;
   }
-  .btn-secondary:hover {
-    background: #c7d2fe;
+  body.dark .dropdown-content {
+    background: #111827;
+    color: #cbd5e1;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7);
   }
-  body.dark .btn-primary {
-    background: #2563eb;
-    box-shadow: 0 4px 8px rgb(37 99 235 / 0.7);
+  .dropdown-content.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1);
   }
-  body.dark .btn-primary:hover {
-    background: #3b82f6;
+
+  /* Loading animation - 3 cubes */
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 2rem 0;
   }
-  body.dark .btn-secondary {
-    background: #374151;
-    color: #93c5fd;
+  .cube {
+    width: 14px;
+    height: 14px;
+    background: #4ade80; /* green-400 */
+    border-radius: 0.25rem;
+    animation: cubeScale 1.2s infinite ease-in-out;
   }
-  body.dark .btn-secondary:hover {
-    background: #4b5563;
+  .cube:nth-child(2) {
+    animation-delay: 0.2s;
   }
+  .cube:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  @keyframes cubeScale {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.6); opacity: 0.5; }
+  }
+
+  /* Dark mode toggle button */
   .settings-btn {
-    font-size: 1.2rem;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: #e0e0e0;
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    box-shadow:
+      3px 3px 6px #bebebe,
+      -3px -3px 6px #ffffff;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    z-index: 999;
+  }
+  .settings-btn:hover {
+    background: #c7d5e0;
+  }
+  body.dark .settings-btn {
+    background: #1e293b;
+    box-shadow:
+      inset 3px 3px 6px #111827,
+      inset -3px -3px 6px #2c3e50;
+  }
+  body.dark .settings-btn:hover {
+    background: #334155;
+  }
+
+  /* Select dropdown */
+  select {
+    border-radius: 0.5rem;
+    border: 1.5px solid #94a3b8;
+    padding: 0.25rem 0.75rem;
+    background: #f0f0f0;
+    color: #334155;
+    font-weight: 600;
+    box-shadow:
+      2px 2px 5px #ccc,
+      -2px -2px 5px #fff;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+  }
+  body.dark select {
+    background: #2a3748;
+    color: #cbd5e1;
+    border-color: #475569;
+    box-shadow:
+      inset 2px 2px 5px #1b2736,
+      inset -2px -2px 5px #3b4a6c;
+  }
+  select:focus {
+    outline: none;
+    border-color: #4ade80;
+    box-shadow:
+      0 0 8px #4ade80;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 640px) {
+    .dropdown-content {
+      width: 90vw;
+      left: 50%;
+      transform: translateX(-50%) scale(1);
+    }
   }
 </style>
 </head>
-<body class="transition-colors duration-500">
+<body class="transition-colors duration-300">
+  <button class="settings-btn" aria-label="Toggle light/dark mode">Toggle Mode</button>
 
-  <header class="header max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 select-none">🌱 Grow a Garden Stock Viewer</h1>
-    <div>
-      <button id="refreshBtn" class="btn btn-primary mr-3" title="Refresh stock">Refresh 🔄</button>
-      <button id="toggleModeBtn" class="btn btn-secondary settings-btn" title="Toggle Light/Dark Mode">🌗</button>
+  <div class="container">
+    <h1>🪴 Grow a Garden Stock</h1>
+
+    <div class="flex flex-wrap justify-center gap-4 mb-6">
+      <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" id="seeds" checked class="form-checkbox h-5 w-5 text-green-500" />
+        <span class="font-semibold text-gray-700 dark:text-gray-300">Seeds</span>
+      </label>
+      <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" id="gear" checked class="form-checkbox h-5 w-5 text-green-500" />
+        <span class="font-semibold text-gray-700 dark:text-gray-300">Gear</span>
+      </label>
+      <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" id="eggs" checked class="form-checkbox h-5 w-5 text-green-500" />
+        <span class="font-semibold text-gray-700 dark:text-gray-300">Eggs</span>
+      </label>
+      <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" id="cosmetic" checked class="form-checkbox h-5 w-5 text-green-500" />
+        <span class="font-semibold text-gray-700 dark:text-gray-300">Cosmetics</span>
+      </label>
     </div>
-  </header>
 
-  <main class="max-w-4xl mx-auto px-4 pb-12" id="content">
+    <div id="output" aria-live="polite" aria-busy="false"></div>
 
-    <!-- Loading and Error placeholder -->
-    <div id="statusMessage" class="loading select-none">Loading stock...</div>
+    <div id="loading" class="loading-container" aria-hidden="true" role="status" aria-live="assertive">
+      <div class="cube"></div>
+      <div class="cube"></div>
+      <div class="cube"></div>
+    </div>
 
-  </main>
+    <div id="errorMsg" class="text-red-600 font-bold mt-6 text-center hidden" role="alert"></div>
+  </div>
 
 <script>
 (() => {
-  'use strict';
-
   const API_BASE = 'https://api.joshlei.com/v2/growagarden';
-  const content = document.getElementById('content');
-  const statusMessage = document.getElementById('statusMessage');
-  const refreshBtn = document.getElementById('refreshBtn');
-  const toggleModeBtn = document.getElementById('toggleModeBtn');
+  const output = document.getElementById('output');
+  const loading = document.getElementById('loading');
+  const errorMsg = document.getElementById('errorMsg');
+  const settingsBtn = document.querySelector('.settings-btn');
+  const darkModeClass = 'dark';
 
-  // State
-  let darkMode = localStorage.getItem('darkMode') === 'true';
-  document.body.classList.toggle('dark', darkMode);
+  // Track open dropdown for closing
+  let openDropdown = null;
 
-  // Toggle Dark Mode
-  toggleModeBtn.addEventListener('click', () => {
-    darkMode = !darkMode;
-    document.body.classList.toggle('dark', darkMode);
-    localStorage.setItem('darkMode', darkMode);
-  });
-
-  // Helper: Create elements with classes and text
-  function el(type, classNames = '', text) {
-    const e = document.createElement(type);
-    if (classNames) e.className = classNames;
-    if (text !== undefined) e.textContent = text;
-    return e;
+  // Toggle dark mode with saved preference
+  function applyDarkMode(dark) {
+    if(dark) {
+      document.body.classList.add(darkModeClass);
+    } else {
+      document.body.classList.remove(darkModeClass);
+    }
   }
 
-  // Render item card with dropdown details
-  function renderItem(item, category) {
-    const card = el('div', 'item-card', '');
-    card.setAttribute('tabindex', '0');
+  function saveDarkMode(dark) {
+    localStorage.setItem('darkMode', dark ? '1' : '0');
+  }
+
+  function loadDarkMode() {
+    const stored = localStorage.getItem('darkMode');
+    if(stored === '1') return true;
+    if(stored === '0') return false;
+    // Default system preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  settingsBtn.addEventListener('click', () => {
+    const isDark = document.body.classList.contains(darkModeClass);
+    applyDarkMode(!isDark);
+    saveDarkMode(!isDark);
+  });
+
+  // Load dark mode on start
+  applyDarkMode(loadDarkMode());
+
+  // Format sheckels (currency)
+  function formatSheckels(num) {
+    return `${num.toLocaleString()} ⍟`; // Using ⍟ symbol as sheckel style
+  }
+
+  // Create item card element
+  function createItemCard(item) {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.tabIndex = 0;
     card.setAttribute('role', 'button');
     card.setAttribute('aria-expanded', 'false');
-    card.setAttribute('aria-label', `${item.display_name} details`);
+    card.setAttribute('aria-haspopup', 'true');
+    card.setAttribute('aria-controls', `details-${item.item_id}`);
+
+    const left = document.createElement('div');
+    left.className = 'flex items-center gap-3';
 
     // Icon image
     const icon = document.createElement('img');
     icon.src = item.icon;
-    icon.alt = item.display_name;
-    icon.className = 'w-12 h-12 rounded-lg flex-shrink-0';
-    card.appendChild(icon);
+    icon.alt = `${item.display_name} icon`;
+    icon.className = 'w-10 h-10 rounded-md object-contain drop-shadow-md';
+    left.appendChild(icon);
 
-    // Name + quantity
-    const nameDiv = el('div', 'item-name', item.display_name);
-    card.appendChild(nameDiv);
+    // Name and quantity container
+    const textCont = document.createElement('div');
+    textCont.className = 'flex flex-col';
 
-    // Quantity + price container
-    const qtyPrice = el('div', 'flex flex-col items-end space-y-0.5');
-    const quantity = el('div', 'quantity', `Qty: ${item.quantity}`);
-    qtyPrice.appendChild(quantity);
+    const name = document.createElement('span');
+    name.textContent = item.display_name;
+    name.className = 'item-text';
 
-    // Price: show "Sheckels"
-    if (item.price !== undefined) {
-      const price = el('div', 'quantity', `Price: ${item.price} Sheckels`);
-      qtyPrice.appendChild(price);
-    }
+    const quantity = document.createElement('span');
+    quantity.className = 'quantity-badge';
+    quantity.textContent = formatSheckels(item.quantity);
 
-    card.appendChild(qtyPrice);
+    textCont.appendChild(name);
+    textCont.appendChild(quantity);
 
-    // Dropdown toggle button
-    const dropdownBtn = el('button', 'dropdown-btn');
-    dropdownBtn.textContent = 'Details ▼';
-    dropdownBtn.setAttribute('aria-expanded', 'false');
-    dropdownBtn.setAttribute('aria-controls', `details-${category}-${item.item_id}`);
-    dropdownBtn.setAttribute('type', 'button');
-
-    card.appendChild(dropdownBtn);
+    left.appendChild(textCont);
+    card.appendChild(left);
 
     // Dropdown details container
-    const dropdownContent = el('div', 'dropdown-content');
-    dropdownContent.id = `details-${category}-${item.item_id}`;
-    dropdownContent.setAttribute('aria-hidden', 'true');
-    card.appendChild(dropdownContent);
+    const dropdown = document.createElement('div');
+    dropdown.className = 'dropdown-content';
+    dropdown.id = `details-${item.item_id}`;
+    dropdown.setAttribute('role', 'region');
+    dropdown.setAttribute('aria-live', 'polite');
+    dropdown.style.pointerEvents = 'auto';
 
-    // Toggle dropdown logic
-    dropdownBtn.addEventListener('click', async e => {
+    // Add details text
+    dropdown.innerHTML = `
+      <p><strong>Start:</strong> ${new Date(item.Date_Start).toLocaleString()}</p>
+      <p><strong>End:</strong> ${new Date(item.Date_End).toLocaleString()}</p>
+      <p><strong>Item ID:</strong> ${item.item_id}</p>
+    `;
+
+    card.appendChild(dropdown);
+
+    // Toggle dropdown
+    card.addEventListener('click', e => {
       e.stopPropagation();
+      const expanded = card.getAttribute('aria-expanded') === 'true';
+      closeOpenDropdown();
 
-      const isOpen = dropdownContent.classList.contains('show');
+      if (!expanded) {
+        dropdown.classList.add('show');
+        card.setAttribute('aria-expanded', 'true');
+        openDropdown = {card, dropdown};
+      }
+    });
 
-      // Close all other dropdowns
-      document.querySelectorAll('.dropdown-content.show').forEach(dc => {
-        if (dc !== dropdownContent) {
-          dc.classList.remove('show');
-          dc.setAttribute('aria-hidden', 'true');
-        }
-      });
-      document.querySelectorAll('.dropdown-btn[aria-expanded="true"]').forEach(btn => {
-        if (btn !== dropdownBtn) btn.setAttribute('aria-expanded', 'false');
-      });
-
-      if (isOpen) {
-        dropdownContent.classList.remove('show');
-        dropdownContent.setAttribute('aria-hidden', 'true');
-        dropdownBtn.setAttribute('aria-expanded', 'false');
-      } else {
-        dropdownContent.classList.add('show');
-        dropdownContent.setAttribute('aria-hidden', 'false');
-        dropdownBtn.setAttribute('aria-expanded', 'true');
-
-        if (!dropdownContent.dataset.loaded) {
-          dropdownContent.innerHTML = `<p class="text-gray-500 dark:text-gray-400 select-none">Loading details...</p>`;
-          try {
-            const res = await fetch(`${API_BASE}/info/${item.item_id}`, {cache: 'no-store'});
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-
-            // Build details html cleanly
-            let detailsHtml = '';
-            if (data.display_name) detailsHtml += `<strong>${data.display_name}</strong><br/>`;
-            if (data.description) detailsHtml += `<p class="mt-1 text-sm">${data.description}</p>`;
-            if (data.value !== undefined) detailsHtml += `<p class="mt-1 font-mono">Value: ${data.value}</p>`;
-            if (data.price !== undefined) detailsHtml += `<p class="mt-1 font-mono">Price: ${data.price} Sheckels</p>`;
-
-            dropdownContent.innerHTML = detailsHtml || `<p>No details available.</p>`;
-          } catch {
-            dropdownContent.innerHTML = `<p class="text-red-500 select-none">Failed to load details.</p>`;
-          }
-          dropdownContent.dataset.loaded = "true";
-        }
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        card.click();
       }
     });
 
     return card;
   }
 
-  // Render category section with items
-  function renderCategory(title, items, categoryKey) {
-    if (!items || items.length === 0) return null;
-
-    const section = el('section', 'category skeuocard');
-    const h2 = el('h2', '', title);
-    section.appendChild(h2);
-
-    items.forEach(item => {
-      section.appendChild(renderItem(item, categoryKey));
-    });
-
-    return section;
-  }
-
-  // Render weather - only the first active weather event
-  function renderWeather(weatherArray) {
-    if (!weatherArray || weatherArray.length === 0) return null;
-    const activeWeather = weatherArray.find(w => w.active);
-    if (!activeWeather) return null;
-
-    const section = el('section', 'category skeuocard');
-    const h2 = el('h2', '', 'Current Weather');
-    section.appendChild(h2);
-
-    const article = el('article', 'flex items-center gap-4 select-none');
-    article.setAttribute('tabindex', '0');
-
-    const img = el('img');
-    img.src = activeWeather.icon;
-    img.alt = activeWeather.weather_name;
-    img.className = 'w-14 h-14 rounded-lg flex-shrink-0';
-    article.appendChild(img);
-
-    const name = el('div', 'item-name font-semibold text-lg', activeWeather.weather_name);
-    article.appendChild(name);
-
-    const durationMin = Math.round(activeWeather.duration / 60);
-    const duration = el('div', 'quantity', `Duration: ${durationMin} min`);
-    article.appendChild(duration);
-
-    section.appendChild(article);
-
-    return section;
-  }
-
-  // Show loading or error message
-  function showStatus(message, isError = false) {
-    statusMessage.textContent = message;
-    statusMessage.className = isError ? 'error-msg select-none' : 'loading select-none';
-  }
-
-  // Fetch and render all
-  async function fetchAndRender() {
-    showStatus('Loading stock...');
-    content.innerHTML = '';
-    content.appendChild(statusMessage);
-
-    try {
-      const resStock = await fetch(`${API_BASE}/stock`, {cache: 'no-store'});
-      if (!resStock.ok) throw new Error(`Stock HTTP ${resStock.status}`);
-      const stockData = await resStock.json();
-
-      const resWeather = await fetch(`${API_BASE}/weather`, {cache: 'no-store'});
-      if (!resWeather.ok) throw new Error(`Weather HTTP ${resWeather.status}`);
-      const weatherData = await resWeather.json();
-
-      // Remove status message on success
-      statusMessage.remove();
-
-      // Render stock categories
-      const categories = [
-        {key: 'seed_stock', title: 'Seeds'},
-        {key: 'gear_stock', title: 'Gear'},
-        {key: 'egg_stock', title: 'Eggs'},
-        {key: 'cosmetic_stock', title: 'Cosmetics'},
-        {key: 'eventshop_stock', title: 'Event Shop'},
-        {key: 'travelingmerchant_stock', title: 'Traveling Merchant'},
-      ];
-
-      categories.forEach(cat => {
-        const section = renderCategory(cat.title, stockData[cat.key], cat.key);
-        if (section) content.appendChild(section);
-      });
-
-      // Render weather
-      const weatherSection = renderWeather(weatherData.weather);
-      if (weatherSection) content.appendChild(weatherSection);
-
-    } catch (err) {
-      showStatus('Error loading data, please try again later.', true);
-      console.error(err);
+  // Close open dropdown if any
+  function closeOpenDropdown() {
+    if(openDropdown) {
+      openDropdown.dropdown.classList.remove('show');
+      openDropdown.card.setAttribute('aria-expanded', 'false');
+      openDropdown = null;
     }
   }
 
-  // Initial load
-  fetchAndRender();
-
-  // Manual refresh
-  refreshBtn.addEventListener('click', () => {
-    fetchAndRender();
+  // Close dropdown on outside click
+  document.addEventListener('click', closeOpenDropdown);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeOpenDropdown();
   });
 
-  // Close dropdowns on outside click
-  document.body.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown-content.show').forEach(dc => {
-      dc.classList.remove('show');
-      dc.setAttribute('aria-hidden', 'true');
-    });
-    document.querySelectorAll('.dropdown-btn[aria-expanded="true"]').forEach(btn => {
-      btn.setAttribute('aria-expanded', 'false');
-    });
-  });
+  // Show loading animation
+  function showLoading(show) {
+    loading.setAttribute('aria-hidden', show ? 'false' : 'true');
+    output.setAttribute('aria-busy', show ? 'true' : 'false');
+    loading.style.display = show ? 'flex' : 'none';
+  }
 
+  // Show error message
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.classList.toggle('hidden', !msg);
+  }
+
+  // Fetch stock and weather data
+  async function fetchData() {
+    showLoading(true);
+    showError('');
+    closeOpenDropdown();
+
+    try {
+      const [stockRes, weatherRes] = await Promise.all([
+        fetch(`${API_BASE}/stock`),
+        fetch(`${API_BASE}/weather`),
+      ]);
+      if (!stockRes.ok) throw new Error(`Stock API error: ${stockRes.status}`);
+      if (!weatherRes.ok) throw new Error(`Weather API error: ${weatherRes.status}`);
+
+      const stockData = await stockRes.json();
+      const weatherData = await weatherRes.json();
+
+      renderData(stockData, weatherData);
+    } catch (err) {
+      showError('Error fetching data. No internet or rate limit reached, please try again later.');
+      console.error(err);
+      output.innerHTML = '';
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // Render fetched data
+  function renderData(stockData, weatherData) {
+    output.innerHTML = '';
+
+    // Show current weather (only active one)
+    const currentWeather = weatherData.weather?.find(w => w.active) || null;
+    if (currentWeather) {
+      const weatherCard = document.createElement('div');
+      weatherCard.className = 'card mb-6 flex items-center gap-4 justify-center text-center';
+      weatherCard.innerHTML = `
+        <img src="${currentWeather.icon}" alt="${currentWeather.weather_name}" class="w-16 h-16" />
+        <div>
+          <h2 class="text-xl font-bold">${currentWeather.weather_name}</h2>
+          <p class="text-gray-600 dark:text-gray-400">Duration: ${Math.floor(currentWeather.duration/60)} min</p>
+        </div>
+      `;
+      output.appendChild(weatherCard);
+    }
+
+    // Which categories to show based on checkboxes
+    const showSeeds = document.getElementById('seeds').checked;
+    const showGear = document.getElementById('gear').checked;
+    const showEggs = document.getElementById('eggs').checked;
+    const showCosmetic = document.getElementById('cosmetic').checked;
+
+    const categories = [
+      { key: 'seed_stock', label: 'Seeds', show: showSeeds },
+      { key: 'gear_stock', label: 'Gear', show: showGear },
+      { key: 'egg_stock', label: 'Eggs', show: showEggs },
+      { key: 'cosmetic_stock', label: 'Cosmetics', show: showCosmetic },
+    ];
+
+    categories.forEach(({key, label, show}) => {
+      if (!show || !stockData[key]) return;
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<div class="category-header">${label}</div>`;
+      stockData[key].forEach(item => {
+        const cardItem = createItemCard(item);
+        card.appendChild(cardItem);
+      });
+
+      output.appendChild(card);
+    });
+  }
+
+  // Reload every 10 seconds (optional: can be removed if you want manual only)
+  // setInterval(fetchData, 10000);
+
+  // Init fetch on load
+  fetchData();
+
+  // Checkbox event to refresh display instantly
+  ['seeds','gear','eggs','cosmetic'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => fetchData());
+  });
 })();
 </script>
 
