@@ -5,8 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Grow a Garden Stock + Weather + Calculate + Info</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Use Poppins font */
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Dark mode styles */
+    body.dark {
+      background-color: #1a202c; /* Tailwind slate-900 */
+      color: #cbd5e1; /* Tailwind slate-300 */
+    }
+    body.dark #output {
+      background-color: #2d3748; /* slate-800 */
+      color: #cbd5e1;
+    }
+    body.dark .category {
+      background-color: rgba(45, 55, 72, 0.7) !important;
+    }
+    body.dark .new-item {
+      box-shadow: 0 0 12px 4px rgba(72, 187, 120, 0.9);
+      background: linear-gradient(90deg, #38b2ac, #68d391);
+      animation: fadeInHighlight 3s ease forwards;
+    }
+    body.dark header p {
+      color: #94a3b8; /* slate-400 */
+    }
+    body.dark #error {
+      background-color: #742a2a;
+      color: #fef2f2;
+    }
+    body.dark button.settings-btn {
+      background-color: #2d3748;
+      color: #a0aec0;
+    }
+    body.dark button.settings-btn:hover {
+      background-color: #4a5568;
+    }
+    body.dark .dropdown-content {
+      background-color: #2d3748;
+      color: #cbd5e1;
+    }
+
+    /* Animations */
     @keyframes fadeInHighlight {
       0% {
         background: linear-gradient(90deg, #a7f3d0, #6ee7b7);
@@ -17,9 +61,12 @@
         box-shadow: none;
       }
     }
+
     .new-item {
       animation: fadeInHighlight 3s ease forwards;
     }
+
+    /* Category gradient backgrounds */
     .category-seeds {
       background: linear-gradient(to right, #d1fae5, #6ee7b7);
     }
@@ -38,13 +85,87 @@
     .category-weather {
       background: linear-gradient(to right, #bae6fd, #38bdf8);
     }
-    /* Modal backdrop */
-    .modal-backdrop {
-      background: rgba(0, 0, 0, 0.4);
+
+    /* Dropdown styles */
+    .dropdown {
+      position: relative;
+      display: inline-block;
     }
+    .dropdown-button {
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      z-index: 100;
+      min-width: 180px;
+      max-width: 300px;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      background: white;
+      color: black;
+      top: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      font-size: 0.9rem;
+    }
+    body.dark .dropdown-content {
+      background-color: #2d3748;
+      color: #cbd5e1;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.7);
+    }
+    .dropdown-content.show {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .dropdown-content p {
+      margin: 0.25rem 0;
+      line-height: 1.3;
+    }
+
+    /* Settings button */
+    #settings-button {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background-color: #e2e8f0; /* gray-200 */
+      color: #1f2937; /* gray-800 */
+      border: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      z-index: 200;
+      box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+    }
+    #settings-button:hover {
+      background-color: #cbd5e1;
+    }
+    body.dark #settings-button {
+      background-color: #4a5568;
+      color: #e2e8f0;
+    }
+    body.dark #settings-button:hover {
+      background-color: #2d3748;
+    }
+
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center p-6 font-sans text-gray-900">
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-6 text-gray-900">
+
+  <button id="settings-button" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode">🌗 Mode</button>
 
   <header class="mb-6 select-none max-w-3xl w-full text-center">
     <h1 class="text-4xl font-extrabold text-green-700 mb-2">Grow a Garden Stock + Weather + Calculate + Info</h1>
@@ -96,8 +217,8 @@
 
   <!-- Modal for item info -->
   <div id="info-modal" class="fixed inset-0 hidden items-center justify-center z-50">
-    <div class="modal-backdrop absolute inset-0"></div>
-    <div class="bg-white rounded-lg shadow-xl max-w-md mx-4 p-6 relative z-10">
+    <div class="modal-backdrop absolute inset-0 bg-black bg-opacity-40"></div>
+    <div class="bg-white rounded-lg shadow-xl max-w-md mx-4 p-6 relative z-10 max-h-[80vh] overflow-auto">
       <button id="close-modal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-900" aria-label="Close info modal" title="Close">&times;</button>
       <div id="info-content" tabindex="0" class="outline-none"></div>
     </div>
@@ -114,6 +235,7 @@
       const modal = document.getElementById('info-modal');
       const modalContent = document.getElementById('info-content');
       const closeModalBtn = document.getElementById('close-modal');
+      const settingsBtn = document.getElementById('settings-button');
 
       const categories = {
         seeds: { key: 'seed_stock', title: 'Seeds', cssClass: 'category-seeds' },
@@ -131,7 +253,7 @@
         eventshop_stock: new Set(),
       };
 
-      let allItemsMap = new Map(); // key=item_id, value=item data (from stock or info)
+      let allItemsMap = new Map(); // item_id => data
 
       // Rate limit control: max 1 fetch per 5 seconds
       let lastFetchTime = 0;
@@ -146,7 +268,7 @@
         </div>
       `;
 
-      // Render weather section from array of weather
+      // Render weather
       const renderWeather = (weatherArr) => {
         if (!Array.isArray(weatherArr) || weatherArr.length === 0) return null;
 
@@ -163,7 +285,7 @@
 
         section.innerHTML = `
           <h2 class="text-2xl font-bold text-gray-800 mb-4">Weather</h2>
-          <div class="flex items-center space-x-6">
+          <div class="flex items-center space-x-6 flex-wrap gap-4">
             <img src="${icon || ''}" alt="${weather_name} icon" class="w-16 h-16" loading="lazy" />
             <div class="text-lg font-semibold text-blue-800">${weather_name}</div>
             <div class="text-gray-700 font-mono">Duration: ${Math.floor(duration / 60)} mins</div>
@@ -175,7 +297,25 @@
         return section;
       };
 
-      // Render stock category items
+      // Create dropdown menu for item details/prices
+      function createDropdown(detailsHtml) {
+        const dropdown = document.createElement('div');
+        dropdown.className = 'dropdown-content rounded-md shadow-md';
+        dropdown.innerHTML = detailsHtml;
+        return dropdown;
+      }
+
+      // Toggle dropdown visibility with animation
+      function toggleDropdown(dropdown) {
+        const isShown = dropdown.classList.contains('show');
+        if (isShown) {
+          dropdown.classList.remove('show');
+        } else {
+          dropdown.classList.add('show');
+        }
+      }
+
+      // Render stock category with dropdown price/details
       const renderStockCategory = (items, title, cssClass, key) => {
         const section = document.createElement('section');
         section.className = `category mb-8 rounded-lg p-4 ${cssClass} bg-opacity-20`;
@@ -187,30 +327,90 @@
           const isNew = !prevItems[key].has(item.item_id);
           if (isNew) prevItems[key].add(item.item_id);
 
-          // Save item for calculate & info
           allItemsMap.set(item.item_id, item);
 
+          // Main container for each item
           const article = document.createElement('article');
-          article.className = `p-3 mb-3 rounded-lg border border-gray-200 bg-white flex items-center space-x-4 cursor-pointer select-text ${
+          article.className = `p-3 mb-3 rounded-lg border border-gray-200 bg-white flex items-center space-x-4 cursor-pointer select-text relative ${
             isNew ? 'new-item' : ''
           }`;
           article.setAttribute('tabindex', '0');
           article.setAttribute('role', 'button');
           article.setAttribute('aria-pressed', 'false');
 
+          // Image + name + qty + dropdown button
           article.innerHTML = `
             <img src="${item.icon}" alt="${item.display_name} icon" class="w-12 h-12 rounded-md object-contain flex-shrink-0" loading="lazy" />
             <div class="flex-1">
               <div class="font-semibold text-green-900 text-lg">${item.display_name}</div>
             </div>
-            <div class="text-gray-600 font-mono">Qty: ${item.quantity}</div>
+            <div class="text-gray-600 font-mono mr-4">Qty: ${item.quantity}</div>
+            <div class="dropdown">
+              <button aria-label="Show item details" class="dropdown-button text-green-700 hover:text-green-900 font-semibold select-none flex items-center gap-1">
+                Details
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           `;
 
-          article.addEventListener('click', () => showItemInfo(item.item_id));
-          article.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter' || e.key === ' ') {
+          // Create dropdown content container (hidden by default)
+          const dropdownContainer = document.createElement('div');
+          dropdownContainer.className = 'dropdown-content rounded-md shadow-md hidden max-w-xs';
+          dropdownContainer.setAttribute('aria-hidden', 'true');
+
+          article.querySelector('.dropdown').appendChild(dropdownContainer);
+
+          // Dropdown button toggle event
+          article.querySelector('.dropdown-button').addEventListener('click', async e => {
+            e.stopPropagation();
+            // Close all other dropdowns before opening this
+            document.querySelectorAll('.dropdown-content.show').forEach(dc => {
+              if (dc !== dropdownContainer) {
+                dc.classList.remove('show');
+                dc.setAttribute('aria-hidden', 'true');
+              }
+            });
+
+            if (dropdownContainer.classList.contains('show')) {
+              dropdownContainer.classList.remove('show');
+              dropdownContainer.setAttribute('aria-hidden', 'true');
+            } else {
+              dropdownContainer.classList.add('show');
+              dropdownContainer.setAttribute('aria-hidden', 'false');
+
+              // If dropdown is empty, fetch info
+              if (!dropdownContainer.dataset.loaded) {
+                dropdownContainer.innerHTML = `<p class="text-gray-500">Loading...</p>`;
+                try {
+                  const res = await fetch(`https://api.joshlei.com/v2/growagarden/info/${item.item_id}`);
+                  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                  const data = await res.json();
+                  let details = `<strong>${data.display_name || item.display_name}</strong><br/>`;
+                  if (data.description) {
+                    details += `<p class="mt-1 text-sm">${data.description}</p>`;
+                  }
+                  if (data.value) {
+                    details += `<p class="mt-1 font-mono">Value: ${data.value}</p>`;
+                  }
+                  if (data.price) {
+                    details += `<p class="mt-1 font-mono">Price: ${data.price}</p>`;
+                  }
+                  dropdownContainer.innerHTML = details || `<p>No details available.</p>`;
+                } catch {
+                  dropdownContainer.innerHTML = `<p class="text-red-500">Failed to load details.</p>`;
+                }
+                dropdownContainer.dataset.loaded = "true";
+              }
+            }
+          });
+
+          // Keyboard accessibility: open dropdown on Enter or Space
+          article.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              showItemInfo(item.item_id);
+              article.querySelector('.dropdown-button').click();
             }
           });
 
@@ -220,119 +420,96 @@
         return section;
       };
 
-      // Show item info modal, fetch data from /info/{item_id}
-      async function showItemInfo(itemId) {
-        modalContent.innerHTML = createSpinner();
-        modal.classList.remove('hidden');
-        modal.focus();
-
-        try {
-          const res = await fetch(`https://api.joshlei.com/v2/growagarden/info/${itemId}`, {cache: 'no-store'});
-          if (!res.ok) throw new Error(`API HTTP ${res.status}`);
-          const data = await res.json();
-
-          let html = `<h3 class="text-xl font-bold mb-3">${data.display_name || itemId}</h3>`;
-          if (data.icon) {
-            html += `<img src="${data.icon}" alt="${data.display_name} icon" class="w-20 h-20 mb-4 object-contain"/>`;
+      // Populate calculate select with all stock items + fetch /info for name mapping
+      async function populateCalculateSelect() {
+        const types = ['seed_stock', 'gear_stock', 'egg_stock', 'cosmetic_stock', 'eventshop_stock'];
+        let allItems = [];
+        types.forEach(t => {
+          if (prevItems[t]) {
+            allItems = allItems.concat([...prevItems[t]].map(id => allItemsMap.get(id)));
           }
-          html += `<dl class="space-y-2 text-gray-700">`;
+        });
 
-          for (const [key, val] of Object.entries(data)) {
-            if (['item_id', 'display_name', 'icon'].includes(key)) continue;
-            let valueString = '';
-            if (Array.isArray(val)) {
-              valueString = val.join(', ');
-            } else if (typeof val === 'object' && val !== null) {
-              valueString = JSON.stringify(val, null, 2);
-            } else {
-              valueString = val;
-            }
-            html += `<div><dt class="font-semibold">${key.replace(/_/g, ' ')}</dt><dd class="whitespace-pre-wrap">${valueString}</dd></div>`;
-          }
-          html += '</dl>';
+        // Remove duplicates & sort by display_name
+        const uniqueItems = Array.from(new Map(allItems.map(item => [item.item_id, item])).values());
+        uniqueItems.sort((a, b) => a.display_name.localeCompare(b.display_name));
 
-          modalContent.innerHTML = html;
-
-        } catch (err) {
-          modalContent.innerHTML = `<p class="text-red-600 font-semibold">Failed to load info for item: ${itemId}</p>`;
-          console.error('Info fetch error:', err);
-        }
+        itemSelect.innerHTML = `<option value="" disabled selected>Select an item...</option>`;
+        uniqueItems.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.display_name;
+          option.textContent = item.display_name;
+          itemSelect.appendChild(option);
+        });
       }
 
-      closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
-      modal.addEventListener('click', e => {
-        if (e.target === modal) modal.classList.add('hidden');
-      });
-      window.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-          modal.classList.add('hidden');
-        }
-      });
-
-      function populateCalculateSelect() {
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = 'Select an item...';
-        placeholder.disabled = true;
-        placeholder.selected = true;
-
-        itemSelect.innerHTML = '';
-        itemSelect.appendChild(placeholder);
-
-        for (const [itemId, item] of allItemsMap.entries()) {
-          const opt = document.createElement('option');
-          opt.value = item.display_name; // Calculation needs Name, not item_id
-          opt.textContent = item.display_name || itemId;
-          itemSelect.appendChild(opt);
-        }
-      }
-
-      calcForm.addEventListener('submit', async (e) => {
+      // Calculate form submission handler
+      calcForm.addEventListener('submit', async e => {
         e.preventDefault();
-        const itemName = itemSelect.value;
-        const weight = Number(document.getElementById('weight-input').value);
-
-        if (!itemName) {
-          calcResult.textContent = 'Please select an item first.';
+        const name = itemSelect.value;
+        const weight = document.getElementById('weight-input').value;
+        if (!name || !weight || weight <= 0) {
+          calcResult.textContent = 'Please select an item and enter a valid weight.';
           return;
         }
-        if (!weight || weight <= 0) {
-          calcResult.textContent = 'Please enter a valid weight.';
-          return;
-        }
-
         calcResult.textContent = 'Calculating...';
 
         try {
-          const params = new URLSearchParams({ Name: itemName, Weight: weight });
-          const res = await fetch(`https://api.joshlei.com/v2/growagarden/calculate?${params.toString()}`, {cache: 'no-store'});
-          if (!res.ok) throw new Error(`Calculation API HTTP ${res.status}`);
+          const url = new URL('https://api.joshlei.com/v2/growagarden/calculate');
+          url.searchParams.set('Name', name);
+          url.searchParams.set('Weight', weight);
+          const res = await fetch(url.toString());
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
 
-          let resultText = `Name: ${data.Name}\nWeight: ${data.Weight} g\nValue: ${data.value}`;
-          if(data.Variant) resultText += `\nVariant: ${data.Variant}`;
-          if(data.Mutation) resultText += `\nMutation: ${data.Mutation}`;
-
-          calcResult.textContent = resultText;
-
-        } catch (err) {
-          calcResult.textContent = 'Failed to calculate fruit value. Please try again later.';
-          console.error('Calculation fetch error:', err);
+          calcResult.textContent = `Estimated value for ${data.Name} (${weight}g): ${data.value.toLocaleString()} coins`;
+        } catch {
+          calcResult.textContent = 'Failed to calculate value. Please try again later.';
         }
       });
 
-      // Fetch stock and weather with rate limit
-      const fetchStockAndWeather = async () => {
-        const now = Date.now();
-        if (now - lastFetchTime < 5000) {
-          // Skip fetch to respect 5 second limit
-          return;
+      // Modal close
+      closeModalBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        modalContent.innerHTML = '';
+      });
+
+      // Close modal on outside click
+      modal.addEventListener('click', e => {
+        if (e.target === modal) {
+          closeModalBtn.click();
         }
+      });
+
+      // Light/dark mode toggle logic
+      function setDarkMode(isDark) {
+        if (isDark) {
+          document.body.classList.add('dark');
+          localStorage.setItem('growagarden-darkmode', 'true');
+          settingsBtn.textContent = '🌞 Mode';
+        } else {
+          document.body.classList.remove('dark');
+          localStorage.setItem('growagarden-darkmode', 'false');
+          settingsBtn.textContent = '🌗 Mode';
+        }
+      }
+
+      settingsBtn.addEventListener('click', () => {
+        setDarkMode(!document.body.classList.contains('dark'));
+      });
+
+      // Initialize dark mode from storage or default
+      setDarkMode(localStorage.getItem('growagarden-darkmode') === 'true');
+
+      // Main fetch function
+      async function fetchData() {
+        const now = Date.now();
+        if (now - lastFetchTime < 5000) return; // 5s throttle
         lastFetchTime = now;
 
         output.setAttribute('aria-busy', 'true');
-        output.innerHTML = createSpinner();
         errorBox.classList.add('hidden');
+        output.innerHTML = createSpinner();
 
         try {
           const [stockRes, weatherRes] = await Promise.all([
@@ -347,7 +524,6 @@
           const weatherData = await weatherRes.json();
 
           output.innerHTML = '';
-          // Clear prev sets
           Object.keys(prevItems).forEach(k => prevItems[k].clear());
           allItemsMap.clear();
 
@@ -365,7 +541,7 @@
             output.appendChild(section);
           }
 
-          populateCalculateSelect();
+          await populateCalculateSelect();
 
         } catch (err) {
           output.innerHTML = '';
@@ -375,12 +551,13 @@
         } finally {
           output.setAttribute('aria-busy', 'false');
         }
-      };
+      }
 
-      filtersForm.addEventListener('change', fetchStockAndWeather);
+      filtersForm.addEventListener('change', fetchData);
 
-      fetchStockAndWeather();
-      setInterval(fetchStockAndWeather, 5000);
+      fetchData();
+      setInterval(fetchData, 5000);
+
     })();
   </script>
 </body>
