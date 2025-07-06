@@ -9,432 +9,741 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Use Poppins font */
+    /* Skeuomorphic base styles */
     body {
       font-family: 'Poppins', sans-serif;
+      background: #e0e0e0;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      transition: background 0.3s ease, color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-
-    /* Dark mode styles */
     body.dark {
-      background-color: #1a202c; /* Tailwind slate-900 */
-      color: #cbd5e1; /* Tailwind slate-300 */
-    }
-    body.dark #output {
-      background-color: #2d3748; /* slate-800 */
+      background: #22262e;
       color: #cbd5e1;
     }
-    body.dark .category {
-      background-color: rgba(45, 55, 72, 0.7) !important;
+
+    /* Skeuomorphic cards */
+    .skeuocard {
+      background: #e6e6e6;
+      border-radius: 16px;
+      box-shadow:
+        6px 6px 12px #bebebe,
+        -6px -6px 12px #ffffff;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
     }
-    body.dark .new-item {
-      box-shadow: 0 0 12px 4px rgba(72, 187, 120, 0.9);
-      background: linear-gradient(90deg, #38b2ac, #68d391);
-      animation: fadeInHighlight 3s ease forwards;
+    body.dark .skeuocard {
+      background: #2a2e37;
+      box-shadow:
+        6px 6px 12px #1e2127,
+        -6px -6px 12px #343a45;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      max-width: 900px;
+      margin-bottom: 2rem;
+      user-select: none;
+    }
+    header h1 {
+      font-weight: 900;
+      font-size: 2.75rem;
+      color: #3a9a5a;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      margin-bottom: 0.5rem;
+    }
+    body.dark header h1 {
+      color: #5de57d;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+    }
+    header p {
+      font-weight: 500;
+      color: #666;
     }
     body.dark header p {
-      color: #94a3b8; /* slate-400 */
-    }
-    body.dark #error {
-      background-color: #742a2a;
-      color: #fef2f2;
-    }
-    body.dark button.settings-btn {
-      background-color: #2d3748;
-      color: #a0aec0;
-    }
-    body.dark button.settings-btn:hover {
-      background-color: #4a5568;
-    }
-    body.dark .dropdown-content {
-      background-color: #2d3748;
-      color: #cbd5e1;
+      color: #b0bec5;
     }
 
-    /* Animations */
-    @keyframes fadeInHighlight {
-      0% {
-        background: linear-gradient(90deg, #a7f3d0, #6ee7b7);
-        box-shadow: 0 0 12px 4px rgba(34,197,94,0.8);
-      }
-      100% {
-        background: transparent;
-        box-shadow: none;
-      }
-    }
-
-    .new-item {
-      animation: fadeInHighlight 3s ease forwards;
-    }
-
-    /* Category gradient backgrounds */
-    .category-seeds {
-      background: linear-gradient(to right, #d1fae5, #6ee7b7);
-    }
-    .category-gear {
-      background: linear-gradient(to right, #dbeafe, #3b82f6);
-    }
-    .category-eggs {
-      background: linear-gradient(to right, #fef3c7, #fbbf24);
-    }
-    .category-cosmetics {
-      background: linear-gradient(to right, #ede9fe, #8b5cf6);
-    }
-    .category-eventshop {
-      background: linear-gradient(to right, #fed7aa, #fb923c);
-    }
-    .category-weather {
-      background: linear-gradient(to right, #bae6fd, #38bdf8);
-    }
-
-    /* Dropdown styles */
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-    .dropdown-button {
-      cursor: pointer;
+    /* Filters */
+    #filters {
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
       user-select: none;
+    }
+    #filters label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #e6e6e6;
+      padding: 1rem;
+      border-radius: 16px;
+      box-shadow:
+        inset 4px 4px 6px #bebebe,
+        inset -4px -4px 6px #ffffff;
       font-weight: 600;
+      color: #2d6a3a;
+      transition: box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+    body.dark #filters label {
+      background: #2a2e37;
+      color: #86c68b;
+      box-shadow:
+        inset 4px 4px 6px #1e2127,
+        inset -4px -4px 6px #343a45;
+    }
+    #filters label:hover,
+    #filters label input:checked + span {
+      background: #c0e6b7;
+      box-shadow:
+        4px 4px 6px #a3c79d,
+        -4px -4px 6px #d7f0c2;
+      color: #2b5426;
+    }
+    body.dark #filters label:hover,
+    body.dark #filters label input:checked + span {
+      background: #5aad5a;
+      box-shadow:
+        4px 4px 6px #487a49,
+        -4px -4px 6px #7dc27a;
+      color: #b3ef9c;
+    }
+    #filters input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      accent-color: #3a9a5a;
+    }
+    body.dark #filters input[type="checkbox"] {
+      accent-color: #5de57d;
+    }
+
+    /* Main output container */
+    #output {
+      max-width: 900px;
+      width: 100%;
+      background: #e6e6e6;
+      border-radius: 16px;
+      box-shadow:
+        6px 6px 12px #bebebe,
+        -6px -6px 12px #ffffff;
+      padding: 2rem;
+      min-height: 260px;
+      color: #2f4f2f;
+      user-select: none;
+      overflow-y: auto;
+      transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+    }
+    body.dark #output {
+      background: #2a2e37;
+      color: #b0d8ac;
+      box-shadow:
+        6px 6px 12px #1e2127,
+        -6px -6px 12px #343a45;
+    }
+
+    /* Categories styling */
+    .category {
+      margin-bottom: 2rem;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      background: #f0f0f0;
+      box-shadow:
+        inset 4px 4px 6px #bebebe,
+        inset -4px -4px 6px #ffffff;
+      transition: background 0.3s ease;
+      user-select: text;
+    }
+    body.dark .category {
+      background: #242832;
+      box-shadow:
+        inset 4px 4px 6px #1e2127,
+        inset -4px -4px 6px #343a45;
+    }
+    .category h2 {
+      font-weight: 700;
+      color: #3a9a5a;
+      margin-bottom: 1rem;
+      user-select: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    body.dark .category h2 {
+      color: #5de57d;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+    }
+
+    /* Individual item card */
+    article {
+      background: #e6e6e6;
+      border-radius: 14px;
+      box-shadow:
+        6px 6px 8px #bebebe,
+        -6px -6px 8px #ffffff;
+      margin-bottom: 1rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      user-select: text;
+      transition: box-shadow 0.2s ease, background 0.2s ease;
+    }
+    body.dark article {
+      background: #2a2e37;
+      box-shadow:
+        6px 6px 8px #1e2127,
+        -6px -6px 8px #343a45;
+    }
+    article:hover,
+    article:focus-visible {
+      box-shadow:
+        8px 8px 10px #b1b1b1,
+        -8px -8px 10px #ffffff;
+      outline: none;
+      background: #d4e7ce;
+      color: #1a4f20;
+    }
+    body.dark article:hover,
+    body.dark article:focus-visible {
+      box-shadow:
+        8px 8px 10px #17201c,
+        -8px -8px 10px #3a4a3b;
+      background: #3a4f3c;
+      color: #9bdb89;
+    }
+
+    /* Item image */
+    article img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      border-radius: 8px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    /* Item name */
+    .item-name {
+      flex-grow: 1;
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: #2f553f;
+      user-select: text;
+    }
+    body.dark .item-name {
+      color: #a5dba0;
+    }
+
+    /* Quantity text */
+    .quantity {
+      font-family: monospace;
+      font-weight: 600;
+      color: #4f7942;
+      user-select: text;
+    }
+    body.dark .quantity {
+      color: #7ec17e;
+    }
+
+    /* Dropdown button */
+    .dropdown-button {
+      background: #e6e6e6;
+      border-radius: 12px;
+      box-shadow:
+        inset 3px 3px 6px #bebebe,
+        inset -3px -3px 6px #ffffff;
+      padding: 0.35rem 0.75rem;
+      font-weight: 600;
+      color: #3a9a5a;
       display: flex;
       align-items: center;
       gap: 0.25rem;
+      user-select: none;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+      border: none;
     }
+    body.dark .dropdown-button {
+      background: #2a2e37;
+      color: #5de57d;
+      box-shadow:
+        inset 3px 3px 6px #1e2127,
+        inset -3px -3px 6px #343a45;
+    }
+    .dropdown-button:hover,
+    .dropdown-button:focus-visible {
+      background: #c0e6b7;
+      color: #276b25;
+      box-shadow:
+        3px 3px 6px #a3c79d,
+        -3px -3px 6px #d7f0c2;
+      outline: none;
+    }
+    body.dark .dropdown-button:hover,
+    body.dark .dropdown-button:focus-visible {
+      background: #5aad5a;
+      color: #2d602a;
+      box-shadow:
+        3px 3px 6px #487a49,
+        -3px -3px 6px #7dc27a;
+      outline: none;
+    }
+
+    /* Dropdown content */
     .dropdown-content {
-      display: none;
       position: absolute;
-      z-index: 100;
-      min-width: 180px;
-      max-width: 300px;
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      background: white;
-      color: black;
-      top: 110%;
-      left: 50%;
-      transform: translateX(-50%);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-      opacity: 0;
-      pointer-events: none;
+      margin-top: 0.5rem;
+      padding: 1rem;
+      background: #e6e6e6;
+      border-radius: 16px;
+      box-shadow:
+        8px 8px 12px #bebebe,
+        -8px -8px 12px #ffffff;
+      max-width: 320px;
+      color: #2f553f;
       font-size: 0.9rem;
+      user-select: text;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: none;
+      z-index: 50;
     }
     body.dark .dropdown-content {
-      background-color: #2d3748;
-      color: #cbd5e1;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.7);
+      background: #2a2e37;
+      color: #a5dba0;
+      box-shadow:
+        8px 8px 12px #1e2127,
+        -8px -8px 12px #343a45;
     }
     .dropdown-content.show {
-      display: block;
       opacity: 1;
+      transform: translateY(0);
       pointer-events: auto;
-      transform: translateX(-50%) translateY(0);
-    }
-    .dropdown-content p {
-      margin: 0.25rem 0;
-      line-height: 1.3;
     }
 
-    /* Settings button */
-    #settings-button {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      background-color: #e2e8f0; /* gray-200 */
-      color: #1f2937; /* gray-800 */
+    /* Calculation section */
+    #calculate-section {
+      max-width: 900px;
+      width: 100%;
+      margin-top: 3rem;
+      background: #e6e6e6;
+      border-radius: 16px;
+      box-shadow:
+        6px 6px 12px #bebebe,
+        -6px -6px 12px #ffffff;
+      padding: 2rem 2.5rem;
+      color: #2f553f;
+      user-select: none;
+      transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+    }
+    body.dark #calculate-section {
+      background: #2a2e37;
+      color: #a5dba0;
+      box-shadow:
+        6px 6px 12px #1e2127,
+        -6px -6px 12px #343a45;
+    }
+
+    /* Calculation form */
+    #calculate-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+    #calculate-form select,
+    #calculate-form input[type="number"] {
       border: none;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.375rem;
-      cursor: pointer;
+      padding: 0.75rem 1rem;
+      border-radius: 16px;
+      box-shadow:
+        inset 6px 6px 8px #bebebe,
+        inset -6px -6px 8px #ffffff;
+      font-size: 1rem;
       font-weight: 600;
-      transition: background-color 0.3s ease;
-      z-index: 200;
-      box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+      color: #2f553f;
+      user-select: text;
+      transition: box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+      min-width: 180px;
+      flex-grow: 1;
+      max-width: 100%;
     }
-    #settings-button:hover {
-      background-color: #cbd5e1;
+    #calculate-form select:focus,
+    #calculate-form input[type="number"]:focus {
+      outline: none;
+      box-shadow:
+        inset 3px 3px 6px #a3c79d,
+        inset -3px -3px 6px #d7f0c2;
+      background: #c0e6b7;
+      color: #276b25;
     }
-    body.dark #settings-button {
-      background-color: #4a5568;
-      color: #e2e8f0;
+    body.dark #calculate-form select,
+    body.dark #calculate-form input[type="number"] {
+      background: #2a2e37;
+      color: #a5dba0;
+      box-shadow:
+        inset 6px 6px 8px #1e2127,
+        inset -6px -6px 8px #343a45;
     }
-    body.dark #settings-button:hover {
-      background-color: #2d3748;
+    body.dark #calculate-form select:focus,
+    body.dark #calculate-form input[type="number"]:focus {
+      background: #5aad5a;
+      color: #2d602a;
+      box-shadow:
+        inset 3px 3px 6px #487a49,
+        inset -3px -3px 6px #7dc27a;
     }
 
+    /* Submit button */
+    #calculate-form button[type="submit"],
+    #refresh-btn,
+    #settings-btn {
+      background: #e6e6e6;
+      box-shadow:
+        6px 6px 12px #bebebe,
+        -6px -6px 12px #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 0.8rem 1.6rem;
+      font-weight: 700;
+      color: #3a9a5a;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+      font-size: 1.1rem;
+      margin-left: auto;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+      justify-content: center;
+    }
+    #calculate-form button[type="submit"]:hover,
+    #refresh-btn:hover,
+    #settings-btn:hover {
+      background: #c0e6b7;
+      box-shadow:
+        4px 4px 6px #a3c79d,
+        -4px -4px 6px #d7f0c2;
+      color: #276b25;
+    }
+    body.dark #calculate-form button[type="submit"],
+    body.dark #refresh-btn,
+    body.dark #settings-btn {
+      background: #2a2e37;
+      color: #5de57d;
+      box-shadow:
+        6px 6px 12px #1e2127,
+        -6px -6px 12px #343a45;
+    }
+    body.dark #calculate-form button[type="submit"]:hover,
+    body.dark #refresh-btn:hover,
+    body.dark #settings-btn:hover {
+      background: #5aad5a;
+      color: #2d602a;
+      box-shadow:
+        4px 4px 6px #487a49,
+        -4px -4px 6px #7dc27a;
+    }
+
+    /* Calculation result text */
+    #calc-result {
+      margin-top: 1rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #3a9a5a;
+      user-select: text;
+    }
+    body.dark #calc-result {
+      color: #5de57d;
+    }
+
+    /* Spinner style */
+    .spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3a9a5a;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+      margin: 3rem auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    /* Error box */
+    #error-box {
+      max-width: 900px;
+      margin: 1rem auto;
+      background: #ffcccc;
+      color: #a00000;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      box-shadow: 4px 4px 8px #aa0000;
+      user-select: none;
+      display: none;
+      text-align: center;
+    }
+
+    /* Settings & Refresh buttons container */
+    #top-controls {
+      width: 900px;
+      max-width: 100%;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      user-select: none;
+    }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center p-6 text-gray-900">
-
-  <button id="settings-button" aria-label="Toggle light/dark mode" title="Toggle Light/Dark Mode">🌗 Mode</button>
-
-  <header class="mb-6 select-none max-w-3xl w-full text-center">
-    <h1 class="text-4xl font-extrabold text-green-700 mb-2">Grow a Garden Stock + Weather + Calculate + Info</h1>
-    <p class="text-gray-600">Live stock, weather, fruit calculations, and item info from Grow a Garden API</p>
+<body>
+  <header>
+    <h1>Grow a Garden</h1>
+    <p>Live Stock & Weather Monitor with Calculator & Info</p>
   </header>
 
-  <form id="filters" aria-label="Select categories" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 max-w-3xl w-full mb-8 select-none">
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-blue-50 transition">
-      <input type="checkbox" id="weather" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-blue-700">Weather</span>
-    </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-green-50 transition">
-      <input type="checkbox" id="seeds" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-green-700">Seeds</span>
-    </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-blue-50 transition">
-      <input type="checkbox" id="gear" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-blue-700">Gear</span>
-    </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-yellow-50 transition">
-      <input type="checkbox" id="eggs" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-yellow-700">Eggs</span>
-    </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-purple-50 transition">
-      <input type="checkbox" id="cosmetics" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-purple-700">Cosmetics</span>
-    </label>
-    <label class="cursor-pointer flex items-center space-x-2 bg-white rounded-lg shadow-md p-3 hover:bg-orange-50 transition">
-      <input type="checkbox" id="eventshop" checked class="w-5 h-5 cursor-pointer"/>
-      <span class="font-semibold text-orange-700">Event Shop</span>
-    </label>
-  </form>
-
-  <main id="output" role="region" aria-live="polite" aria-busy="false" tabindex="0" class="max-w-3xl w-full bg-white rounded-lg shadow-lg p-6 min-h-[240px] select-none"></main>
-
-  <div id="error" role="alert" aria-live="assertive" class="max-w-3xl w-full mt-6 bg-red-100 text-red-700 font-semibold p-4 rounded-lg shadow-md hidden select-none"></div>
-
-  <section id="calculate-section" class="max-w-3xl w-full bg-white rounded-lg shadow-lg p-6 mt-10 mb-6">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4 select-none">Calculate Fruit Value</h2>
-    <form id="calculate-form" class="flex flex-col sm:flex-row gap-4">
-      <select id="item-select" class="border border-gray-300 rounded-md px-3 py-2 flex-grow" aria-label="Select item for calculation">
-        <option value="" disabled selected>Select an item...</option>
-      </select>
-      <input type="number" id="weight-input" placeholder="Weight (g)" min="1" class="border border-gray-300 rounded-md px-3 py-2 w-28" aria-label="Weight in grams" required />
-      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold transition">Calculate</button>
-    </form>
-    <pre id="calculation-result" class="mt-4 text-gray-700 font-mono whitespace-pre-wrap"></pre>
+  <section id="filters" aria-label="Filter categories">
+    <label><input type="checkbox" id="seed_stock" checked /><span>Seeds</span></label>
+    <label><input type="checkbox" id="gear_stock" checked /><span>Gear</span></label>
+    <label><input type="checkbox" id="egg_stock" checked /><span>Eggs</span></label>
+    <label><input type="checkbox" id="cosmetic_stock" checked /><span>Cosmetics</span></label>
+    <label><input type="checkbox" id="eventshop_stock" checked /><span>Event Shop</span></label>
+    <label><input type="checkbox" id="travelingmerchant_stock" checked /><span>Traveling Merchant</span></label>
+    <label><input type="checkbox" id="weather" checked /><span>Weather</span></label>
   </section>
 
-  <!-- Modal for item info -->
-  <div id="info-modal" class="fixed inset-0 hidden items-center justify-center z-50">
-    <div class="modal-backdrop absolute inset-0 bg-black bg-opacity-40"></div>
-    <div class="bg-white rounded-lg shadow-xl max-w-md mx-4 p-6 relative z-10 max-h-[80vh] overflow-auto">
-      <button id="close-modal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-900" aria-label="Close info modal" title="Close">&times;</button>
-      <div id="info-content" tabindex="0" class="outline-none"></div>
-    </div>
+  <div id="top-controls">
+    <button id="refresh-btn" aria-label="Refresh data">🔄 Refresh</button>
+    <button id="settings-btn" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌗 Mode</button>
   </div>
 
+  <main id="output" role="main" aria-live="polite" aria-busy="false"></main>
+
+  <section id="calculate-section" class="skeuocard" aria-label="Fruit Value Calculator">
+    <form id="calculate-form" aria-describedby="calc-result">
+      <select id="item-select" aria-label="Select an item">
+        <option value="" selected disabled>Select an item...</option>
+      </select>
+      <input type="number" id="weight-input" min="0" step="0.01" placeholder="Weight (g)" aria-label="Enter weight in grams" required />
+      <button type="submit" aria-label="Calculate value">Calculate</button>
+    </form>
+    <p id="calc-result" role="status" aria-live="polite"></p>
+  </section>
+
+  <div id="error-box" role="alert" aria-live="assertive"></div>
+
   <script>
-    (() => {
+    (function () {
+      'use strict';
+
       const output = document.getElementById('output');
-      const errorBox = document.getElementById('error');
+      const errorBox = document.getElementById('error-box');
       const filtersForm = document.getElementById('filters');
-      const itemSelect = document.getElementById('item-select');
+      const refreshBtn = document.getElementById('refresh-btn');
+      const settingsBtn = document.getElementById('settings-btn');
       const calcForm = document.getElementById('calculate-form');
-      const calcResult = document.getElementById('calculation-result');
-      const modal = document.getElementById('info-modal');
-      const modalContent = document.getElementById('info-content');
-      const closeModalBtn = document.getElementById('close-modal');
-      const settingsBtn = document.getElementById('settings-button');
+      const itemSelect = document.getElementById('item-select');
+      const calcResult = document.getElementById('calc-result');
 
-      const categories = {
-        seeds: { key: 'seed_stock', title: 'Seeds', cssClass: 'category-seeds' },
-        gear: { key: 'gear_stock', title: 'Gear', cssClass: 'category-gear' },
-        eggs: { key: 'egg_stock', title: 'Eggs', cssClass: 'category-eggs' },
-        cosmetics: { key: 'cosmetic_stock', title: 'Cosmetics', cssClass: 'category-cosmetics' },
-        eventshop: { key: 'eventshop_stock', title: 'Event Shop', cssClass: 'category-eventshop' },
-      };
-
+      let allItemsMap = new Map();
       let prevItems = {
         seed_stock: new Set(),
         gear_stock: new Set(),
         egg_stock: new Set(),
         cosmetic_stock: new Set(),
         eventshop_stock: new Set(),
+        travelingmerchant_stock: new Set(),
       };
 
-      let allItemsMap = new Map(); // item_id => data
-
-      // Rate limit control: max 1 fetch per 5 seconds
-      let lastFetchTime = 0;
-
-      const createSpinner = () => `
-        <div class="flex justify-center my-16" role="status" aria-live="polite" aria-busy="true">
-          <svg class="animate-spin h-12 w-12 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-          </svg>
-          <span class="sr-only">Loading...</span>
-        </div>
-      `;
-
-      // Render weather
-      const renderWeather = (weatherArr) => {
-        if (!Array.isArray(weatherArr) || weatherArr.length === 0) return null;
-
-        const activeWeather = weatherArr.find(w => w.active) || weatherArr[0];
-        if (!activeWeather) return null;
-
-        const { weather_name, duration = 0, start_duration_unix = 0, end_duration_unix = 0, icon } = activeWeather;
-        const startDate = new Date(start_duration_unix * 1000).toLocaleTimeString();
-        const endDate = new Date(end_duration_unix * 1000).toLocaleTimeString();
-
-        const section = document.createElement('section');
-        section.className = 'category mb-8 rounded-lg p-4 category-weather bg-opacity-20';
-        section.setAttribute('aria-label', 'Weather');
-
-        section.innerHTML = `
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Weather</h2>
-          <div class="flex items-center space-x-6 flex-wrap gap-4">
-            <img src="${icon || ''}" alt="${weather_name} icon" class="w-16 h-16" loading="lazy" />
-            <div class="text-lg font-semibold text-blue-800">${weather_name}</div>
-            <div class="text-gray-700 font-mono">Duration: ${Math.floor(duration / 60)} mins</div>
-            <div class="text-gray-700 font-mono">Start: ${startDate}</div>
-            <div class="text-gray-700 font-mono">End: ${endDate}</div>
-          </div>
-        `;
-
-        return section;
+      const categories = {
+        seed_stock: { key: 'seed_stock', title: 'Seeds', cssClass: 'category-seeds' },
+        gear_stock: { key: 'gear_stock', title: 'Gear', cssClass: 'category-gear' },
+        egg_stock: { key: 'egg_stock', title: 'Eggs', cssClass: 'category-eggs' },
+        cosmetic_stock: { key: 'cosmetic_stock', title: 'Cosmetics', cssClass: 'category-cosmetics' },
+        eventshop_stock: { key: 'eventshop_stock', title: 'Event Shop', cssClass: 'category-eventshop' },
+        travelingmerchant_stock: { key: 'travelingmerchant_stock', title: 'Traveling Merchant', cssClass: 'category-travelingmerchant' },
       };
 
-      // Create dropdown menu for item details/prices
-      function createDropdown(detailsHtml) {
-        const dropdown = document.createElement('div');
-        dropdown.className = 'dropdown-content rounded-md shadow-md';
-        dropdown.innerHTML = detailsHtml;
-        return dropdown;
+      // Spinner markup
+      function createSpinner() {
+        return `<div class="spinner" role="status" aria-label="Loading"></div>`;
       }
 
-      // Toggle dropdown visibility with animation
-      function toggleDropdown(dropdown) {
-        const isShown = dropdown.classList.contains('show');
-        if (isShown) {
-          dropdown.classList.remove('show');
-        } else {
-          dropdown.classList.add('show');
-        }
-      }
-
-      // Render stock category with dropdown price/details
-      const renderStockCategory = (items, title, cssClass, key) => {
+      // Render weather section
+      function renderWeather(weather) {
+        if (!weather.length) return null;
         const section = document.createElement('section');
-        section.className = `category mb-8 rounded-lg p-4 ${cssClass} bg-opacity-20`;
-        section.setAttribute('aria-label', title);
+        section.className = 'category skeuocard';
+        section.setAttribute('aria-label', 'Current Weather');
 
-        section.innerHTML = `<h2 class="text-2xl font-bold text-gray-800 mb-4">${title}</h2>`;
+        const h2 = document.createElement('h2');
+        h2.textContent = 'Current Weather';
+        section.appendChild(h2);
 
-        items.forEach(item => {
-          const isNew = !prevItems[key].has(item.item_id);
-          if (isNew) prevItems[key].add(item.item_id);
-
-          allItemsMap.set(item.item_id, item);
-
-          // Main container for each item
+        weather.forEach(w => {
           const article = document.createElement('article');
-          article.className = `p-3 mb-3 rounded-lg border border-gray-200 bg-white flex items-center space-x-4 cursor-pointer select-text relative ${
-            isNew ? 'new-item' : ''
-          }`;
           article.setAttribute('tabindex', '0');
-          article.setAttribute('role', 'button');
-          article.setAttribute('aria-pressed', 'false');
 
-          // Image + name + qty + dropdown button
-          article.innerHTML = `
-            <img src="${item.icon}" alt="${item.display_name} icon" class="w-12 h-12 rounded-md object-contain flex-shrink-0" loading="lazy" />
-            <div class="flex-1">
-              <div class="font-semibold text-green-900 text-lg">${item.display_name}</div>
-            </div>
-            <div class="text-gray-600 font-mono mr-4">Qty: ${item.quantity}</div>
-            <div class="dropdown">
-              <button aria-label="Show item details" class="dropdown-button text-green-700 hover:text-green-900 font-semibold select-none flex items-center gap-1">
-                Details
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </div>
-          `;
+          const img = document.createElement('img');
+          img.src = w.icon;
+          img.alt = w.weather_name;
+          article.appendChild(img);
 
-          // Create dropdown content container (hidden by default)
-          const dropdownContainer = document.createElement('div');
-          dropdownContainer.className = 'dropdown-content rounded-md shadow-md hidden max-w-xs';
-          dropdownContainer.setAttribute('aria-hidden', 'true');
+          const name = document.createElement('div');
+          name.className = 'item-name';
+          name.textContent = w.weather_name;
+          article.appendChild(name);
 
-          article.querySelector('.dropdown').appendChild(dropdownContainer);
-
-          // Dropdown button toggle event
-          article.querySelector('.dropdown-button').addEventListener('click', async e => {
-            e.stopPropagation();
-            // Close all other dropdowns before opening this
-            document.querySelectorAll('.dropdown-content.show').forEach(dc => {
-              if (dc !== dropdownContainer) {
-                dc.classList.remove('show');
-                dc.setAttribute('aria-hidden', 'true');
-              }
-            });
-
-            if (dropdownContainer.classList.contains('show')) {
-              dropdownContainer.classList.remove('show');
-              dropdownContainer.setAttribute('aria-hidden', 'true');
-            } else {
-              dropdownContainer.classList.add('show');
-              dropdownContainer.setAttribute('aria-hidden', 'false');
-
-              // If dropdown is empty, fetch info
-              if (!dropdownContainer.dataset.loaded) {
-                dropdownContainer.innerHTML = `<p class="text-gray-500">Loading...</p>`;
-                try {
-                  const res = await fetch(`https://api.joshlei.com/v2/growagarden/info/${item.item_id}`);
-                  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                  const data = await res.json();
-                  let details = `<strong>${data.display_name || item.display_name}</strong><br/>`;
-                  if (data.description) {
-                    details += `<p class="mt-1 text-sm">${data.description}</p>`;
-                  }
-                  if (data.value) {
-                    details += `<p class="mt-1 font-mono">Value: ${data.value}</p>`;
-                  }
-                  if (data.price) {
-                    details += `<p class="mt-1 font-mono">Price: ${data.price}</p>`;
-                  }
-                  dropdownContainer.innerHTML = details || `<p>No details available.</p>`;
-                } catch {
-                  dropdownContainer.innerHTML = `<p class="text-red-500">Failed to load details.</p>`;
-                }
-                dropdownContainer.dataset.loaded = "true";
-              }
-            }
-          });
-
-          // Keyboard accessibility: open dropdown on Enter or Space
-          article.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              article.querySelector('.dropdown-button').click();
-            }
-          });
+          const duration = document.createElement('div');
+          duration.className = 'quantity';
+          duration.textContent = `Duration: ${Math.round(w.duration / 60)} min`;
+          article.appendChild(duration);
 
           section.appendChild(article);
         });
 
         return section;
-      };
+      }
 
-      // Populate calculate select with all stock items + fetch /info for name mapping
-      async function populateCalculateSelect() {
-        const types = ['seed_stock', 'gear_stock', 'egg_stock', 'cosmetic_stock', 'eventshop_stock'];
-        let allItems = [];
-        types.forEach(t => {
-          if (prevItems[t]) {
-            allItems = allItems.concat([...prevItems[t]].map(id => allItemsMap.get(id)));
-          }
+      // Render a stock category section
+      function renderStockCategory(items, title, cssClass, key) {
+        const section = document.createElement('section');
+        section.className = 'category skeuocard';
+        section.setAttribute('aria-label', title);
+
+        const h2 = document.createElement('h2');
+        h2.textContent = title;
+        section.appendChild(h2);
+
+        items.forEach(item => {
+          const article = document.createElement('article');
+          article.setAttribute('tabindex', '0');
+
+          // Item image
+          const img = document.createElement('img');
+          img.src = item.icon;
+          img.alt = item.display_name;
+          article.appendChild(img);
+
+          // Item name
+          const name = document.createElement('div');
+          name.className = 'item-name';
+          name.textContent = item.display_name;
+          article.appendChild(name);
+
+          // Quantity
+          const quantity = document.createElement('div');
+          quantity.className = 'quantity';
+          quantity.textContent = `Stock: ${item.quantity}`;
+          article.appendChild(quantity);
+
+          // Dropdown container
+          const dropdownWrapper = document.createElement('div');
+          dropdownWrapper.className = 'dropdown relative ml-auto';
+          dropdownWrapper.style.position = 'relative';
+
+          // Dropdown button
+          const dropdownBtn = document.createElement('button');
+          dropdownBtn.className = 'dropdown-button';
+          dropdownBtn.type = 'button';
+          dropdownBtn.setAttribute('aria-haspopup', 'true');
+          dropdownBtn.setAttribute('aria-expanded', 'false');
+          dropdownBtn.textContent = 'Details ▼';
+          dropdownWrapper.appendChild(dropdownBtn);
+
+          // Dropdown content
+          const dropdownContent = document.createElement('div');
+          dropdownContent.className = 'dropdown-content rounded-md shadow-md hidden max-w-xs';
+          dropdownContent.setAttribute('aria-hidden', 'true');
+          dropdownWrapper.appendChild(dropdownContent);
+
+          article.appendChild(dropdownWrapper);
+
+          // Toggle dropdown on button click
+          dropdownBtn.addEventListener('click', async e => {
+            e.stopPropagation();
+            const isOpen = dropdownContent.classList.contains('show');
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown-content.show').forEach(dc => {
+              if (dc !== dropdownContent) {
+                dc.classList.remove('show');
+                dc.setAttribute('aria-hidden', 'true');
+              }
+            });
+
+            if (isOpen) {
+              dropdownContent.classList.remove('show');
+              dropdownContent.setAttribute('aria-hidden', 'true');
+              dropdownBtn.setAttribute('aria-expanded', 'false');
+            } else {
+              dropdownContent.classList.add('show');
+              dropdownContent.setAttribute('aria-hidden', 'false');
+              dropdownBtn.setAttribute('aria-expanded', 'true');
+
+              if (!dropdownContent.dataset.loaded) {
+                dropdownContent.innerHTML = `<p class="text-gray-500">Loading...</p>`;
+                try {
+                  const res = await fetch(`https://api.joshlei.com/v2/growagarden/info/${item.item_id}`);
+                  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                  const data = await res.json();
+                  let details = `<strong>${data.display_name || item.display_name}</strong><br/>`;
+                  if (data.description) details += `<p class="mt-1 text-sm">${data.description}</p>`;
+                  if (data.value) details += `<p class="mt-1 font-mono">Value: ${data.value}</p>`;
+                  if (data.price) details += `<p class="mt-1 font-mono">Price: ${data.price}</p>`;
+                  dropdownContent.innerHTML = details || `<p>No details available.</p>`;
+                } catch {
+                  dropdownContent.innerHTML = `<p class="text-red-500">Failed to load details.</p>`;
+                }
+                dropdownContent.dataset.loaded = "true";
+              }
+            }
+          });
+
+          section.appendChild(article);
+
+          // Keyboard: toggle dropdown with Enter or Space
+          article.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              dropdownBtn.click();
+            }
+          });
         });
 
-        // Remove duplicates & sort by display_name
-        const uniqueItems = Array.from(new Map(allItems.map(item => [item.item_id, item])).values());
+        return section;
+      }
+
+      // Populate calculate item select with all stock items
+      async function populateCalculateSelect() {
+        let allItems = [];
+        Object.keys(prevItems).forEach(key => {
+          prevItems[key].forEach(id => {
+            const itm = allItemsMap.get(id);
+            if (itm) allItems.push(itm);
+          });
+        });
+
+        // Remove duplicates & sort alphabetically
+        const uniqueItems = Array.from(new Map(allItems.map(i => [i.item_id, i])).values());
         uniqueItems.sort((a, b) => a.display_name.localeCompare(b.display_name));
 
-        itemSelect.innerHTML = `<option value="" disabled selected>Select an item...</option>`;
+        // Clear old options except placeholder
+        itemSelect.querySelectorAll('option:not([disabled])').forEach(o => o.remove());
+
         uniqueItems.forEach(item => {
           const option = document.createElement('option');
           option.value = item.display_name;
@@ -443,7 +752,7 @@
         });
       }
 
-      // Calculate form submission handler
+      // Calculate form submit handler
       calcForm.addEventListener('submit', async e => {
         e.preventDefault();
         const name = itemSelect.value;
@@ -468,19 +777,6 @@
         }
       });
 
-      // Modal close
-      closeModalBtn.addEventListener('click', () => {
-        modal.classList.add('hidden');
-        modalContent.innerHTML = '';
-      });
-
-      // Close modal on outside click
-      modal.addEventListener('click', e => {
-        if (e.target === modal) {
-          closeModalBtn.click();
-        }
-      });
-
       // Light/dark mode toggle logic
       function setDarkMode(isDark) {
         if (isDark) {
@@ -493,28 +789,28 @@
           settingsBtn.textContent = '🌗 Mode';
         }
       }
-
       settingsBtn.addEventListener('click', () => {
         setDarkMode(!document.body.classList.contains('dark'));
       });
-
-      // Initialize dark mode from storage or default
+      // Init dark mode from storage
       setDarkMode(localStorage.getItem('growagarden-darkmode') === 'true');
 
-      // Main fetch function
-      async function fetchData() {
-        const now = Date.now();
-        if (now - lastFetchTime < 5000) return; // 5s throttle
-        lastFetchTime = now;
+      // Fetch data on manual refresh button click
+      refreshBtn.addEventListener('click', fetchData);
 
+      // Initial fetch on page load
+      fetchData();
+
+      // Fetch function (no auto refresh)
+      async function fetchData() {
         output.setAttribute('aria-busy', 'true');
-        errorBox.classList.add('hidden');
+        errorBox.style.display = 'none';
         output.innerHTML = createSpinner();
 
         try {
           const [stockRes, weatherRes] = await Promise.all([
-            fetch('https://api.joshlei.com/v2/growagarden/stock', {cache: 'no-store'}),
-            fetch('https://api.joshlei.com/v2/growagarden/weather', {cache: 'no-store'}),
+            fetch('https://api.joshlei.com/v2/growagarden/stock', { cache: 'no-store' }),
+            fetch('https://api.joshlei.com/v2/growagarden/weather', { cache: 'no-store' }),
           ]);
 
           if (!stockRes.ok) throw new Error(`Stock API HTTP ${stockRes.status}`);
@@ -524,28 +820,39 @@
           const weatherData = await weatherRes.json();
 
           output.innerHTML = '';
+          // Clear prevItems and allItemsMap
           Object.keys(prevItems).forEach(k => prevItems[k].clear());
           allItemsMap.clear();
 
-          // Render weather if checked
-          if (document.getElementById('weather').checked && weatherData.weather?.length) {
+          // Store new items and keep IDs for calculate select
+          Object.entries(categories).forEach(([key, _]) => {
+            const items = stockData[key] || [];
+            items.forEach(i => {
+              allItemsMap.set(i.item_id, i);
+              prevItems[key].add(i.item_id);
+            });
+          });
+
+          // Render weather section if checked
+          if (document.getElementById('weather').checked && Array.isArray(weatherData.weather) && weatherData.weather.length) {
             const weatherSection = renderWeather(weatherData.weather);
             if (weatherSection) output.appendChild(weatherSection);
           }
 
-          // Render stock categories based on filter
-          for (const [filterId, {key, title, cssClass}] of Object.entries(categories)) {
-            if (!document.getElementById(filterId).checked) continue;
-            const items = stockData[key] || [];
-            const section = renderStockCategory(items, title, cssClass, key);
-            output.appendChild(section);
-          }
+          // Render categories that are checked
+          Object.entries(categories).forEach(([filterId, { key, title, cssClass }]) => {
+            if (document.getElementById(filterId).checked) {
+              const items = stockData[key] || [];
+              const section = renderStockCategory(items, title, cssClass, key);
+              output.appendChild(section);
+            }
+          });
 
           await populateCalculateSelect();
 
         } catch (err) {
           output.innerHTML = '';
-          errorBox.classList.remove('hidden');
+          errorBox.style.display = 'block';
           errorBox.textContent = 'Error Code 1: No internet or API limit reached. Please try again later.';
           console.error('Fetch error:', err);
         } finally {
@@ -553,11 +860,16 @@
         }
       }
 
-      filtersForm.addEventListener('change', fetchData);
-
-      fetchData();
-      setInterval(fetchData, 5000);
-
+      // Close dropdowns if clicking outside
+      document.body.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown-content.show').forEach(dc => {
+          dc.classList.remove('show');
+          dc.setAttribute('aria-hidden', 'true');
+        });
+        document.querySelectorAll('.dropdown-button[aria-expanded="true"]').forEach(btn => {
+          btn.setAttribute('aria-expanded', 'false');
+        });
+      });
     })();
   </script>
 </body>
