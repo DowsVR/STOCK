@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Grow a Garden Stock + Calculate + Info</title>
+  <title>Grow a Garden Stock + Weather + Calculate + Info</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -47,8 +47,8 @@
 <body class="bg-gray-50 min-h-screen flex flex-col items-center p-6 font-sans text-gray-900">
 
   <header class="mb-6 select-none max-w-3xl w-full text-center">
-    <h1 class="text-4xl font-extrabold text-green-700 mb-2">Grow a Garden Stock + Calculate + Info</h1>
-    <p class="text-gray-600">View live stock, weather, calculate fruit values, and see item details.</p>
+    <h1 class="text-4xl font-extrabold text-green-700 mb-2">Grow a Garden Stock + Weather + Calculate + Info</h1>
+    <p class="text-gray-600">Live stock, weather, fruit calculations, and item info from Grow a Garden API</p>
   </header>
 
   <form id="filters" aria-label="Select categories" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 max-w-3xl w-full mb-8 select-none">
@@ -88,9 +88,10 @@
       <select id="item-select" class="border border-gray-300 rounded-md px-3 py-2 flex-grow" aria-label="Select item for calculation">
         <option value="" disabled selected>Select an item...</option>
       </select>
+      <input type="number" id="weight-input" placeholder="Weight (g)" min="1" class="border border-gray-300 rounded-md px-3 py-2 w-28" aria-label="Weight in grams" required />
       <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold transition">Calculate</button>
     </form>
-    <div id="calculation-result" class="mt-4 text-gray-700 font-mono"></div>
+    <pre id="calculation-result" class="mt-4 text-gray-700 font-mono whitespace-pre-wrap"></pre>
   </section>
 
   <!-- Modal for item info -->
@@ -132,6 +133,9 @@
 
       let allItemsMap = new Map(); // key=item_id, value=item data (from stock or info)
 
+      // Rate limit control: max 1 fetch per 5 seconds
+      let lastFetchTime = 0;
+
       const createSpinner = () => `
         <div class="flex justify-center my-16" role="status" aria-live="polite" aria-busy="true">
           <svg class="animate-spin h-12 w-12 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -142,15 +146,16 @@
         </div>
       `;
 
-      // Render weather section
-      const renderWeather = (weatherData) => {
-        if (!weatherData) return null;
+      // Render weather section from array of weather
+      const renderWeather = (weatherArr) => {
+        if (!Array.isArray(weatherArr) || weatherArr.length === 0) return null;
 
-        const condition = weatherData.weather_name || 'Unknown';
-        const durationSec = weatherData.duration ?? 0;
-        const startDate = new Date(weatherData.start_date_unix * 1000).toLocaleTimeString();
-        const endDate = new Date(weatherData.end_date_unix * 1000).toLocaleTimeString();
-        const iconUrl = weatherData.icon || '';
+        const activeWeather = weatherArr.find(w => w.active) || weatherArr[0];
+        if (!activeWeather) return null;
+
+        const { weather_name, duration = 0, start_duration_unix = 0, end_duration_unix = 0, icon } = activeWeather;
+        const startDate = new Date(start_duration_unix * 1000).toLocaleTimeString();
+        const endDate = new Date(end_duration_unix * 1000).toLocaleTimeString();
 
         const section = document.createElement('section');
         section.className = 'category mb-8 rounded-lg p-4 category-weather bg-opacity-20';
@@ -159,9 +164,9 @@
         section.innerHTML = `
           <h2 class="text-2xl font-bold text-gray-800 mb-4">Weather</h2>
           <div class="flex items-center space-x-6">
-            <img src="${iconUrl}" alt="${condition} icon" class="w-16 h-16" loading="lazy" />
-            <div class="text-lg font-semibold text-blue-800">${condition}</div>
-            <div class="text-gray-700 font-mono">Duration: ${Math.floor(durationSec/60)} mins</div>
+            <img src="${icon || ''}" alt="${weather_name} icon" class="w-16 h-16" loading="lazy" />
+            <div class="text-lg font-semibold text-blue-800">${weather_name}</div>
+            <div class="text-gray-700 font-mono">Duration: ${Math.floor(duration / 60)} mins</div>
             <div class="text-gray-700 font-mono">Start: ${startDate}</div>
             <div class="text-gray-700 font-mono">End: ${endDate}</div>
           </div>
@@ -170,7 +175,7 @@
         return section;
       };
 
-      // Render stock category
+      // Render stock category items
       const renderStockCategory = (items, title, cssClass, key) => {
         const section = document.createElement('section');
         section.className = `category mb-8 rounded-lg p-4 ${cssClass} bg-opacity-20`;
@@ -182,7 +187,7 @@
           const isNew = !prevItems[key].has(item.item_id);
           if (isNew) prevItems[key].add(item.item_id);
 
-          // Store for selection and info
+          // Save item for calculate & info
           allItemsMap.set(item.item_id, item);
 
           const article = document.createElement('article');
@@ -201,7 +206,6 @@
             <div class="text-gray-600 font-mono">Qty: ${item.quantity}</div>
           `;
 
-          // Clicking shows item info modal
           article.addEventListener('click', () => showItemInfo(item.item_id));
           article.addEventListener('keypress', (e) => {
             if(e.key === 'Enter' || e.key === ' ') {
@@ -216,7 +220,7 @@
         return section;
       };
 
-      // Show item info modal with fetch from /info/{item_id}
+      // Show item info modal, fetch data from /info/{item_id}
       async function showItemInfo(itemId) {
         modalContent.innerHTML = createSpinner();
         modal.classList.remove('hidden');
@@ -227,7 +231,6 @@
           if (!res.ok) throw new Error(`API HTTP ${res.status}`);
           const data = await res.json();
 
-          // Build info content from data object (show all keys nicely)
           let html = `<h3 class="text-xl font-bold mb-3">${data.display_name || itemId}</h3>`;
           if (data.icon) {
             html += `<img src="${data.icon}" alt="${data.display_name} icon" class="w-20 h-20 mb-4 object-contain"/>`;
@@ -256,7 +259,6 @@
         }
       }
 
-      // Close modal handlers
       closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
       modal.addEventListener('click', e => {
         if (e.target === modal) modal.classList.add('hidden');
@@ -267,44 +269,49 @@
         }
       });
 
-      // Populate select options for calculation from allItemsMap keys
       function populateCalculateSelect() {
-        // Clear old options except placeholder
-        const placeholder = itemSelect.querySelector('option[disabled]');
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Select an item...';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+
         itemSelect.innerHTML = '';
         itemSelect.appendChild(placeholder);
 
         for (const [itemId, item] of allItemsMap.entries()) {
           const opt = document.createElement('option');
-          opt.value = itemId;
+          opt.value = item.display_name; // Calculation needs Name, not item_id
           opt.textContent = item.display_name || itemId;
           itemSelect.appendChild(opt);
         }
       }
 
-      // Handle calculation form submission
       calcForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const itemId = itemSelect.value;
-        if (!itemId) {
+        const itemName = itemSelect.value;
+        const weight = Number(document.getElementById('weight-input').value);
+
+        if (!itemName) {
           calcResult.textContent = 'Please select an item first.';
           return;
         }
+        if (!weight || weight <= 0) {
+          calcResult.textContent = 'Please enter a valid weight.';
+          return;
+        }
+
         calcResult.textContent = 'Calculating...';
 
         try {
-          const res = await fetch(`https://api.joshlei.com/v2/growagarden/calculate?item_id=${encodeURIComponent(itemId)}`, {cache: 'no-store'});
+          const params = new URLSearchParams({ Name: itemName, Weight: weight });
+          const res = await fetch(`https://api.joshlei.com/v2/growagarden/calculate?${params.toString()}`, {cache: 'no-store'});
           if (!res.ok) throw new Error(`Calculation API HTTP ${res.status}`);
           const data = await res.json();
 
-          // Show result nicely, handle if array or object
-          let resultText = JSON.stringify(data, null, 2);
-          if(typeof data === 'object' && data !== null){
-            resultText = '';
-            for(const [k,v] of Object.entries(data)){
-              resultText += `${k.replace(/_/g, ' ')}: ${typeof v === 'object' ? JSON.stringify(v) : v}\n`;
-            }
-          }
+          let resultText = `Name: ${data.Name}\nWeight: ${data.Weight} g\nValue: ${data.value}`;
+          if(data.Variant) resultText += `\nVariant: ${data.Variant}`;
+          if(data.Mutation) resultText += `\nMutation: ${data.Mutation}`;
 
           calcResult.textContent = resultText;
 
@@ -314,8 +321,15 @@
         }
       });
 
-      // Fetch stock and weather
+      // Fetch stock and weather with rate limit
       const fetchStockAndWeather = async () => {
+        const now = Date.now();
+        if (now - lastFetchTime < 5000) {
+          // Skip fetch to respect 5 second limit
+          return;
+        }
+        lastFetchTime = now;
+
         output.setAttribute('aria-busy', 'true');
         output.innerHTML = createSpinner();
         errorBox.classList.add('hidden');
@@ -333,23 +347,25 @@
           const weatherData = await weatherRes.json();
 
           output.innerHTML = '';
+          // Clear prev sets
+          Object.keys(prevItems).forEach(k => prevItems[k].clear());
           allItemsMap.clear();
-          // Weather first if checked
-          if(document.getElementById('weather').checked){
-            const weatherSection = renderWeather(weatherData);
-            if(weatherSection) output.appendChild(weatherSection);
+
+          // Render weather if checked
+          if (document.getElementById('weather').checked && weatherData.weather?.length) {
+            const weatherSection = renderWeather(weatherData.weather);
+            if (weatherSection) output.appendChild(weatherSection);
           }
 
-          // Render each stock category if checked
-          for(const [filterId, {key, title, cssClass}] of Object.entries(categories)){
-            if(!document.getElementById(filterId).checked) continue;
-            const items = stockData[key] ?? [];
+          // Render stock categories based on filter
+          for (const [filterId, {key, title, cssClass}] of Object.entries(categories)) {
+            if (!document.getElementById(filterId).checked) continue;
+            const items = stockData[key] || [];
             const section = renderStockCategory(items, title, cssClass, key);
             output.appendChild(section);
           }
 
           populateCalculateSelect();
-          output.focus();
 
         } catch (err) {
           output.innerHTML = '';
@@ -361,13 +377,10 @@
         }
       };
 
-      filtersForm.addEventListener('change', () => {
-        Object.values(prevItems).forEach(set => set.clear());
-        fetchStockAndWeather();
-      });
+      filtersForm.addEventListener('change', fetchStockAndWeather);
 
       fetchStockAndWeather();
-      setInterval(fetchStockAndWeather, 10000);
+      setInterval(fetchStockAndWeather, 5000);
     })();
   </script>
 </body>
